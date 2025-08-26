@@ -1,4 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import BatchJobConfigurator from '../../components/execution/BatchJobConfigurator/BatchJobConfigurator';
+import RealTimeMonitoringPanel from '../../components/execution/RealTimeMonitoringPanel';
+import { useRealTimeJobMonitoring } from '../../hooks/useRealTimeJobMonitoring';
+import DataTable, { Column } from '../../components/ui/DataTable/DataTable';
+import Button from '../../components/ui/Button/Button';
+import StatusBadge from '../../components/batch/StatusBadge/StatusBadge';
+import PriorityBadge from '../../components/batch/PriorityBadge/PriorityBadge';
+import { BatchJob } from '../../types/batch.types';
 import { 
   Play, 
   Clock, 
@@ -17,28 +25,9 @@ import {
   Trash2,
   Eye,
   Filter,
-  Search
+  Search,
+  Activity
 } from 'lucide-react';
-
-interface BatchJob {
-  id: string;
-  name: string;
-  description: string;
-  technique: string;
-  sourceTable: string;
-  targetTable: string;
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'paused' | 'scheduled';
-  progress: number;
-  recordsTotal: number;
-  recordsProcessed: number;
-  startTime?: Date;
-  endTime?: Date;
-  scheduledTime?: Date;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  estimatedDuration: number;
-  createdBy: string;
-  parameters: Record<string, any>;
-}
 
 const BatchExecution = () => {
   const [jobs, setJobs] = useState<BatchJob[]>([
@@ -96,78 +85,11 @@ const BatchExecution = () => {
     }
   ]);
 
-  const [showNewJobModal, setShowNewJobModal] = useState(false);
+  const [showJobConfigurator, setShowJobConfigurator] = useState(false);
   const [selectedJob, setSelectedJob] = useState<BatchJob | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-
-  const [newJob, setNewJob] = useState({
-    name: '',
-    description: '',
-    technique: '',
-    sourceTable: '',
-    targetTable: '',
-    priority: 'medium' as const,
-    scheduledTime: '',
-    parameters: {}
-  });
-
-  const techniques = [
-    'Hashing (SHA-256)',
-    'Hashing (SHA-1)',
-    'Hashing (MD5)',
-    'Tokenización',
-    'Dynamic Data Masking',
-    'Pseudonimización',
-    'Encriptación AES-256',
-    'Date Shifting',
-    'Geographic Masking'
-  ];
-
-  const getStatusBadge = (status: string) => {
-    const badges = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      running: 'bg-blue-100 text-blue-800',
-      completed: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-      paused: 'bg-gray-100 text-gray-800',
-      scheduled: 'bg-purple-100 text-purple-800'
-    };
-    return `px-2 py-1 rounded-full text-xs font-medium ${badges[status as keyof typeof badges]}`;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    const badges = {
-      low: 'bg-gray-100 text-gray-800',
-      medium: 'bg-blue-100 text-blue-800',
-      high: 'bg-orange-100 text-orange-800',
-      critical: 'bg-red-100 text-red-800'
-    };
-    return `px-2 py-1 rounded-full text-xs font-medium ${badges[priority as keyof typeof badges]}`;
-  };
-
-  const getStatusText = (status: string) => {
-    const texts = {
-      pending: 'Pendiente',
-      running: 'Ejecutando',
-      completed: 'Completado',
-      failed: 'Fallido',
-      paused: 'Pausado',
-      scheduled: 'Programado'
-    };
-    return texts[status as keyof typeof texts];
-  };
-
-  const getPriorityText = (priority: string) => {
-    const texts = {
-      low: 'Baja',
-      medium: 'Media',
-      high: 'Alta',
-      critical: 'Crítica'
-    };
-    return texts[priority as keyof typeof texts];
-  };
+  const [selectedRows, setSelectedRows] = useState<BatchJob[]>([]);
+  
+  const { isMonitoring, startMonitoring, stopMonitoring } = useRealTimeJobMonitoring();
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -179,31 +101,33 @@ const BatchExecution = () => {
     return new Intl.NumberFormat('es-CL').format(num);
   };
 
-  const handleCreateJob = () => {
+  const handleJobConfigured = (jobConfig: any) => {
     const job: BatchJob = {
       id: Date.now().toString(),
-      ...newJob,
-      status: newJob.scheduledTime ? 'scheduled' : 'pending',
+      name: jobConfig.name,
+      description: jobConfig.description,
+      technique: jobConfig.columnMappings[0]?.technique || 'No especificada',
+      sourceTable: jobConfig.sourceTable,
+      targetTable: jobConfig.targetTable,
+      status: jobConfig.schedule.type === 'immediate' ? 'pending' : 'scheduled',
       progress: 0,
       recordsTotal: 0,
       recordsProcessed: 0,
-      scheduledTime: newJob.scheduledTime ? new Date(newJob.scheduledTime) : undefined,
+      scheduledTime: jobConfig.schedule.datetime ? new Date(jobConfig.schedule.datetime) : undefined,
+      priority: 'medium',
       estimatedDuration: 60,
-      createdBy: 'current@user.cl'
+      createdBy: 'current@user.cl',
+      parameters: {
+        columnMappings: jobConfig.columnMappings,
+        filters: jobConfig.filters,
+        performance: jobConfig.performance,
+        validation: jobConfig.validation,
+        notifications: jobConfig.notifications
+      }
     };
     
     setJobs([...jobs, job]);
-    setShowNewJobModal(false);
-    setNewJob({
-      name: '',
-      description: '',
-      technique: '',
-      sourceTable: '',
-      targetTable: '',
-      priority: 'medium',
-      scheduledTime: '',
-      parameters: {}
-    });
+    setShowJobConfigurator(false);
   };
 
   const handleJobAction = (jobId: string, action: string) => {
@@ -228,15 +152,6 @@ const BatchExecution = () => {
     }).filter(job => !(job.id === jobId && action === 'delete')));
   };
 
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || job.priority === priorityFilter;
-    
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
-
   const stats = {
     total: jobs.length,
     running: jobs.filter(j => j.status === 'running').length,
@@ -244,6 +159,120 @@ const BatchExecution = () => {
     failed: jobs.filter(j => j.status === 'failed').length,
     scheduled: jobs.filter(j => j.status === 'scheduled').length
   };
+
+  // Configuración de columnas para DataTable
+  const columns: Column<BatchJob>[] = [
+    {
+      key: 'name',
+      header: 'Trabajo',
+      sortable: true,
+      render: (value, row) => (
+        <div>
+          <div className="font-medium text-gray-900">{row.name}</div>
+          <div className="text-sm text-gray-500">{row.description}</div>
+          <div className="text-xs text-gray-400 mt-1">
+            {row.sourceTable} → {row.targetTable}
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'technique',
+      header: 'Técnica',
+      sortable: true,
+      render: (value) => (
+        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+          {value}
+        </span>
+      )
+    },
+    {
+      key: 'status',
+      header: 'Estado',
+      sortable: true,
+      render: (value, row) => <StatusBadge job={row} />
+    },
+    {
+      key: 'progress',
+      header: 'Progreso',
+      sortable: true,
+      render: (value, row) => (
+        <div className="w-full">
+          <div className="flex justify-between text-sm mb-1">
+            <span>{row.progress}%</span>
+            <span>{formatNumber(row.recordsProcessed)} / {formatNumber(row.recordsTotal)}</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${row.progress}%` }}
+            ></div>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'priority',
+      header: 'Prioridad',
+      sortable: true,
+      render: (value, row) => <PriorityBadge job={row} />
+    },
+    {
+      key: 'startTime',
+      header: 'Tiempo',
+      sortable: true,
+      render: (value, row) => (
+        <div className="text-sm">
+          {row.status === 'scheduled' && row.scheduledTime && (
+            <div className="text-purple-600">
+              Programado: {row.scheduledTime.toLocaleString('es-CL')}
+            </div>
+          )}
+          {row.status === 'running' && row.startTime && (
+            <div className="text-blue-600">
+              Iniciado: {row.startTime.toLocaleString('es-CL')}
+            </div>
+          )}
+          {row.status === 'completed' && row.endTime && (
+            <div className="text-green-600">
+              Completado: {row.endTime.toLocaleString('es-CL')}
+            </div>
+          )}
+          <div className="text-gray-500 text-xs">
+            Duración estimada: {formatDuration(row.estimatedDuration)}
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  // Acciones para cada fila
+  const tableActions = [
+    {
+      label: 'Ver',
+      icon: Eye,
+      variant: 'outline' as const,
+      onClick: (job: BatchJob) => setSelectedJob(job)
+    },
+    {
+      label: 'Iniciar',
+      icon: Play,
+      variant: 'primary' as const,
+      onClick: (job: BatchJob) => handleJobAction(job.id, 'start')
+    },
+    {
+      label: 'Pausar',
+      icon: Pause,
+      variant: 'secondary' as const,
+      onClick: (job: BatchJob) => handleJobAction(job.id, 'pause')
+    },
+    {
+      label: 'Eliminar',
+      icon: Trash2,
+      variant: 'danger' as const,
+      onClick: (job: BatchJob) => handleJobAction(job.id, 'delete')
+    }
+  ];
 
   return (
     <div className="p-6 space-y-6">
@@ -259,17 +288,16 @@ const BatchExecution = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <button className="btn-outline flex items-center gap-2">
-              <Download className="w-4 h-4" />
+            <Button variant="outline" icon={Download}>
               Exportar Reporte
-            </button>
-            <button 
-              className="btn-primary flex items-center gap-2"
-              onClick={() => setShowNewJobModal(true)}
+            </Button>
+            <Button 
+              variant="primary" 
+              icon={Plus}
+              onClick={() => setShowJobConfigurator(true)}
             >
-              <Plus className="w-4 h-4" />
               Nuevo Trabajo
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -281,6 +309,12 @@ const BatchExecution = () => {
             <div>
               <p className="text-blue-100 text-sm">Total Trabajos</p>
               <p className="text-2xl font-bold">{stats.total}</p>
+              {isMonitoring && (
+                <div className="flex items-center gap-1 mt-1">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-blue-200 text-xs">En vivo</span>
+                </div>
+              )}
             </div>
             <Database className="w-8 h-8 text-blue-200" />
           </div>
@@ -323,305 +357,34 @@ const BatchExecution = () => {
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Buscar trabajos..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-3">
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-800"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">Todos los estados</option>
-              <option value="pending">Pendiente</option>
-              <option value="running">Ejecutando</option>
-              <option value="completed">Completado</option>
-              <option value="failed">Fallido</option>
-              <option value="scheduled">Programado</option>
-            </select>
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-800"
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-            >
-              <option value="all">Todas las prioridades</option>
-              <option value="low">Baja</option>
-              <option value="medium">Media</option>
-              <option value="high">Alta</option>
-              <option value="critical">Crítica</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      {/* Jobs Table usando DataTable */}
+      <DataTable
+        data={jobs}
+        columns={columns}
+        actions={tableActions}
+        searchable={true}
+        sortable={true}
+        pagination={true}
+        pageSize={10}
+        selectable={true}
+        onRowSelect={setSelectedRows}
+        onRowClick={(job) => setSelectedJob(job)}
+        emptyMessage="No hay trabajos de anonimización configurados"
+      />
 
-      {/* Jobs Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="table-header">
-                <th className="px-6 py-3 text-left">Trabajo</th>
-                <th className="px-6 py-3 text-left">Técnica</th>
-                <th className="px-6 py-3 text-left">Estado</th>
-                <th className="px-6 py-3 text-left">Progreso</th>
-                <th className="px-6 py-3 text-left">Prioridad</th>
-                <th className="px-6 py-3 text-left">Tiempo</th>
-                <th className="px-6 py-3 text-left">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredJobs.map((job) => (
-                <tr key={job.id} className="border-t border-gray-200 hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="font-medium text-gray-900">{job.name}</div>
-                      <div className="text-sm text-gray-500">{job.description}</div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        {job.sourceTable} → {job.targetTable}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                      {job.technique}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={getStatusBadge(job.status)}>
-                      {getStatusText(job.status)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="w-full">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{job.progress}%</span>
-                        <span>{formatNumber(job.recordsProcessed)} / {formatNumber(job.recordsTotal)}</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${job.progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={getPriorityBadge(job.priority)}>
-                      {getPriorityText(job.priority)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm">
-                      {job.status === 'scheduled' && job.scheduledTime && (
-                        <div className="text-purple-600">
-                          Programado: {job.scheduledTime.toLocaleString('es-CL')}
-                        </div>
-                      )}
-                      {job.status === 'running' && job.startTime && (
-                        <div className="text-blue-600">
-                          Iniciado: {job.startTime.toLocaleString('es-CL')}
-                        </div>
-                      )}
-                      {job.status === 'completed' && job.endTime && (
-                        <div className="text-green-600">
-                          Completado: {job.endTime.toLocaleString('es-CL')}
-                        </div>
-                      )}
-                      <div className="text-gray-500 text-xs">
-                        Duración estimada: {formatDuration(job.estimatedDuration)}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      {job.status === 'pending' && (
-                        <button
-                          className="text-green-600 hover:text-green-800 text-sm font-medium"
-                          onClick={() => handleJobAction(job.id, 'start')}
-                        >
-                          <Play className="w-4 h-4" />
-                        </button>
-                      )}
-                      {job.status === 'running' && (
-                        <button
-                          className="text-yellow-600 hover:text-yellow-800 text-sm font-medium"
-                          onClick={() => handleJobAction(job.id, 'pause')}
-                        >
-                          <Pause className="w-4 h-4" />
-                        </button>
-                      )}
-                      {job.status === 'paused' && (
-                        <button
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          onClick={() => handleJobAction(job.id, 'resume')}
-                        >
-                          <Play className="w-4 h-4" />
-                        </button>
-                      )}
-                      <button
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                        onClick={() => setSelectedJob(job)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                        onClick={() => handleJobAction(job.id, 'delete')}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Real-time Monitoring Panel */}
+      {isMonitoring && (
+        <RealTimeMonitoringPanel />
+      )}
 
-      {/* New Job Modal */}
-      {showNewJobModal && (
+      {/* Job Configurator Modal */}
+      {showJobConfigurator && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Nuevo Trabajo Batch
-              </h2>
-              <button
-                onClick={() => setShowNewJobModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre del Trabajo *
-                  </label>
-                  <input
-                    type="text"
-                    value={newJob.name}
-                    onChange={(e) => setNewJob({...newJob, name: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-800"
-                    placeholder="Ej: Anonimización Clientes Q1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prioridad
-                  </label>
-                  <select
-                    value={newJob.priority}
-                    onChange={(e) => setNewJob({...newJob, priority: e.target.value as any})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-800"
-                  >
-                    <option value="low">Baja</option>
-                    <option value="medium">Media</option>
-                    <option value="high">Alta</option>
-                    <option value="critical">Crítica</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Descripción
-                </label>
-                <textarea
-                  value={newJob.description}
-                  onChange={(e) => setNewJob({...newJob, description: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-800"
-                  rows={3}
-                  placeholder="Descripción del trabajo de anonimización"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tabla Origen *
-                  </label>
-                  <input
-                    type="text"
-                    value={newJob.sourceTable}
-                    onChange={(e) => setNewJob({...newJob, sourceTable: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-800"
-                    placeholder="Ej: customers_raw"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tabla Destino *
-                  </label>
-                  <input
-                    type="text"
-                    value={newJob.targetTable}
-                    onChange={(e) => setNewJob({...newJob, targetTable: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-800"
-                    placeholder="Ej: customers_anonymized"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Técnica de Anonimización *
-                  </label>
-                  <select
-                    value={newJob.technique}
-                    onChange={(e) => setNewJob({...newJob, technique: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-800"
-                  >
-                    <option value="">Seleccionar técnica</option>
-                    {techniques.map(technique => (
-                      <option  key={technique} value={technique}>{technique}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Programar Ejecución (Opcional)
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={newJob.scheduledTime}
-                    onChange={(e) => setNewJob({...newJob, scheduledTime: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-800"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 p-6 border-t bg-gray-50">
-              <button
-                onClick={() => setShowNewJobModal(false)}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCreateJob}
-                className="btn-primary flex items-center gap-2"
-                disabled={!newJob.name || !newJob.technique || !newJob.sourceTable || !newJob.targetTable}
-              >
-                <Plus className="w-4 h-4" />
-                Crear Trabajo
-              </button>
-            </div>
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl mx-4 max-h-[90vh] overflow-y-auto">
+            <BatchJobConfigurator
+              onSave={handleJobConfigured}
+              onCancel={() => setShowJobConfigurator(false)}
+            />
           </div>
         </div>
       )}
@@ -634,127 +397,117 @@ const BatchExecution = () => {
               <h2 className="text-xl font-semibold text-gray-900">
                 Detalles del Trabajo: {selectedJob.name}
               </h2>
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setSelectedJob(null)}
-                className="text-gray-400 hover:text-gray-600"
               >
                 ×
-              </button>
+              </Button>
             </div>
-
+            
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Información General</h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Estado:</span>
-                        <span className={getStatusBadge(selectedJob.status)}>
-                          {getStatusText(selectedJob.status)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Prioridad:</span>
-                        <span className={getPriorityBadge(selectedJob.priority)}>
-                          {getPriorityText(selectedJob.priority)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Técnica:</span>
-                        <span className="font-medium text-gray-800">{selectedJob.technique}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Creado por:</span>
-                        <span className="font-medium text-gray-800">{selectedJob.createdBy}</span>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Información General</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Descripción:</span>
+                      <p className="text-gray-900">{selectedJob.description}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Técnica:</span>
+                      <p className="text-gray-900">{selectedJob.technique}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Estado:</span>
+                      <div className="mt-1">
+                        <StatusBadge job={selectedJob} />
                       </div>
                     </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Tablas</h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Origen:</span>
-                        <span className="font-medium text-gray-800">{selectedJob.sourceTable}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Destino:</span>
-                        <span className="font-medium text-gray-800">{selectedJob.targetTable}</span>
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Prioridad:</span>
+                      <div className="mt-1">
+                        <PriorityBadge job={selectedJob} />
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Progreso</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-800">Progreso: {selectedJob.progress}%</span>
-                        <span className="text-gray-800">{formatNumber(selectedJob.recordsProcessed)} / {formatNumber(selectedJob.recordsTotal)}</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div 
-                          className="bg-blue-600 h-3 rounded-full transition-all duration-300"
-                          style={{ width: `${selectedJob.progress}%` }}
-                        ></div>
+                
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Progreso y Estadísticas</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Progreso:</span>
+                      <div className="mt-2">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>{selectedJob.progress}%</span>
+                          <span>{formatNumber(selectedJob.recordsProcessed)} / {formatNumber(selectedJob.recordsTotal)}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${selectedJob.progress}%` }}
+                          ></div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Tiempos</h3>
-                    <div className="space-y-2">
-                      {selectedJob.startTime && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Inicio:</span>
-                          <span className="font-medium">{selectedJob.startTime.toLocaleString('es-CL')}</span>
-                        </div>
-                      )}
-                      {selectedJob.endTime && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Fin:</span>
-                          <span className="font-medium">{selectedJob.endTime.toLocaleString('es-CL')}</span>
-                        </div>
-                      )}
-                      {selectedJob.scheduledTime && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Programado:</span>
-                          <span className="font-medium text-gray-800">{selectedJob.scheduledTime.toLocaleString('es-CL')}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Duración estimada:</span>
-                        <span className="font-medium text-gray-800">{formatDuration(selectedJob.estimatedDuration)}</span>
-                      </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Duración Estimada:</span>
+                      <p className="text-gray-900">{formatDuration(selectedJob.estimatedDuration)}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Creado por:</span>
+                      <p className="text-gray-900">{selectedJob.createdBy}</p>
                     </div>
                   </div>
                 </div>
               </div>
-
+              
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Descripción</h3>
-                <p className="text-gray-600">{selectedJob.description}</p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Parámetros de Configuración</h3>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <pre className="text-sm text-gray-700">
-                    {JSON.stringify(selectedJob.parameters, null, 2)}
-                  </pre>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Tablas</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <span className="text-sm font-medium text-gray-500">Tabla Origen:</span>
+                    <p className="text-gray-900 font-mono">{selectedJob.sourceTable}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <span className="text-sm font-medium text-gray-500">Tabla Destino:</span>
+                    <p className="text-gray-900 font-mono">{selectedJob.targetTable}</p>
+                  </div>
                 </div>
               </div>
+              
+              {selectedJob.parameters && Object.keys(selectedJob.parameters).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Parámetros</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap">
+                      {JSON.stringify(selectedJob.parameters, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              )}
             </div>
-
-            <div className="flex justify-end gap-3 p-6 border-t bg-gray-50">
-              <button
+            
+            <div className="flex justify-end gap-3 p-6 border-t">
+              <Button
+                variant="outline"
                 onClick={() => setSelectedJob(null)}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Cerrar
-              </button>
+              </Button>
+              {selectedJob.status === 'pending' && (
+                <Button
+                  variant="primary"
+                  icon={Play}
+                  onClick={() => {
+                    handleJobAction(selectedJob.id, 'start');
+                    setSelectedJob(null);
+                  }}
+                >
+                  Iniciar Trabajo
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -764,3 +517,4 @@ const BatchExecution = () => {
 };
 
 export default BatchExecution;
+
