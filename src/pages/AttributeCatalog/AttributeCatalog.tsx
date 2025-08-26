@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, Filter, Download, Settings, Shield, Hash, Eye, Key, Shuffle } from 'lucide-react';
+import { Search, Plus, Filter, Download, Settings, Shield, Hash, Eye, Key, Shuffle, X, Save } from 'lucide-react';
 
 interface Attribute {
   id: string;
@@ -21,6 +21,8 @@ const AttributeCatalog: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedAttribute, setSelectedAttribute] = useState<Attribute | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<Partial<Attribute>>({});
 
   // Datos de ejemplo
   const attributes: Attribute[] = [
@@ -132,7 +134,40 @@ const AttributeCatalog: React.FC = () => {
 
   const handleEdit = (attribute: Attribute) => {
     setSelectedAttribute(attribute);
+    setFormData(attribute);
+    setIsEditing(true);
     setShowModal(true);
+  };
+
+  const handleNewAttribute = () => {
+    setSelectedAttribute(null);
+    setFormData({
+      name: '',
+      dataType: '',
+      category: '',
+      technique: '',
+      status: 'inactive',
+      compliance: [],
+      description: '',
+      parameters: {}
+    });
+    setIsEditing(false);
+    setShowModal(true);
+  };
+
+  const handleSave = () => {
+    // Implementar lógica de guardado
+    console.log('Guardando:', formData);
+    setShowModal(false);
+    setSelectedAttribute(null);
+    setFormData({});
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedAttribute(null);
+    setFormData({});
+    setIsEditing(false);
   };
 
   const handleDelete = (id: string) => {
@@ -168,7 +203,7 @@ const AttributeCatalog: React.FC = () => {
             </button>
             <button 
               className="btn-primary flex items-center gap-2"
-              onClick={() => setShowModal(true)}
+              onClick={handleNewAttribute}
             >
               <Plus className="w-4 h-4" />
               Nuevo Atributo
@@ -359,6 +394,205 @@ const AttributeCatalog: React.FC = () => {
       <div className="mt-4 text-sm text-gray-600">
         Mostrando {filteredAttributes.length} de {attributes.length} atributos
       </div>
+
+      {/* Modal de Edición/Creación */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {isEditing ? 'Editar Atributo' : 'Nuevo Atributo'}
+              </h2>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Información Básica */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre del Atributo *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name || ''}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full p-3 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ej: RUT, Email, Teléfono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Dato *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.dataType || ''}
+                    onChange={(e) => setFormData({...formData, dataType: e.target.value})}
+                    className="w-full p-3 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ej: VARCHAR(255), INT, BLOB"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Descripción
+                </label>
+                <textarea
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="w-full p-3 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Descripción del atributo y su uso"
+                />
+              </div>
+
+              {/* Categoría y Técnica */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Categoría *
+                  </label>
+                  <select
+                    value={formData.category || ''}
+                    onChange={(e) => setFormData({...formData, category: e.target.value})}
+                    className="w-full p-3 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Seleccionar categoría</option>
+                    {categories.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Técnica de Anonimización *
+                  </label>
+                  <select
+                    value={formData.technique || ''}
+                    onChange={(e) => setFormData({...formData, technique: e.target.value})}
+                    className="w-full p-3 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Seleccionar técnica</option>
+                    {techniques.map(technique => (
+                      <option key={technique} value={technique}>{technique}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Estado */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Estado
+                </label>
+                <div className="flex gap-4">
+                  {['active', 'testing', 'inactive'].map(status => (
+                    <label key={status} className="flex items-center text-gray-800">
+                      <input
+                        type="radio"
+                        name="status"
+                        value={status}
+                        checked={formData.status === status}
+                        onChange={(e) => setFormData({...formData, status: e.target.value as any})}
+                        className="mr-2 "
+                      />
+                      <span className="text-sm">{getStatusText(status)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cumplimiento Normativo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cumplimiento Normativo
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  {['Ley 19.628', 'Ley 21.719', 'GDPR', 'PCI-DSS'].map(law => (
+                    <label key={law} className="flex items-center text-gray-800">
+                      <input
+                        type="checkbox"
+                        checked={formData.compliance?.includes(law) || false}
+                        onChange={(e) => {
+                          const compliance = formData.compliance || [];
+                          if (e.target.checked) {
+                            setFormData({...formData, compliance: [...compliance, law]});
+                          } else {
+                            setFormData({...formData, compliance: compliance.filter(c => c !== law)});
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{law}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Parámetros de Técnica */}
+              {formData.technique && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Parámetros de la Técnica
+                  </label>
+                  <div className="bg-gray-50 pt-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-3">
+                      Configuración específica para: <strong>{formData.technique}</strong>
+                    </p>
+                    {/* Aquí se pueden agregar campos específicos según la técnica */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Algoritmo/Método
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 text-sm border text-gray-800 border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                          placeholder="Ej: SHA-256, AES-256"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Configuración
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 text-gray-800 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                          placeholder="Parámetros adicionales"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Botones de Acción */}
+            <div className="flex justify-end gap-3 p-6 border-t bg-gray-50">
+              <button
+                onClick={handleCloseModal}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSave}
+                className="btn-primary flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                {isEditing ? 'Actualizar' : 'Crear'} Atributo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
