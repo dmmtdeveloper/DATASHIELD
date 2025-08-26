@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import BatchJobConfigurator from '../../components/execution/BatchJobConfigurator/BatchJobConfigurator';
 import RealTimeMonitoringPanel from '../../components/execution/RealTimeMonitoringPanel';
 import { useRealTimeJobMonitoring } from '../../hooks/useRealTimeJobMonitoring';
-import DataTable, { Column } from '../../components/ui/DataTable/DataTable';
+import DataTable, { type Column } from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button/Button';
 import StatusBadge from '../../components/batch/StatusBadge/StatusBadge';
 import PriorityBadge from '../../components/batch/PriorityBadge/PriorityBadge';
-import { BatchJob } from '../../types/batch.types';
+import type { BatchJob, JobUpdate } from '../../types/batch.types';
 import { 
   Play, 
   Clock, 
@@ -89,7 +89,7 @@ const BatchExecution = () => {
   const [selectedJob, setSelectedJob] = useState<BatchJob | null>(null);
   const [selectedRows, setSelectedRows] = useState<BatchJob[]>([]);
   
-  const { isMonitoring, startMonitoring, stopMonitoring } = useRealTimeJobMonitoring();
+  const {isMonitoring, startMonitoring, stopMonitoring} = useRealTimeJobMonitoring(jobs, setJobs);
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -166,7 +166,7 @@ const BatchExecution = () => {
       key: 'name',
       header: 'Trabajo',
       sortable: true,
-      render: (value, row) => (
+      render: (_, row) => (
         <div>
           <div className="font-medium text-gray-900">{row.name}</div>
           <div className="text-sm text-gray-500">{row.description}</div>
@@ -190,13 +190,13 @@ const BatchExecution = () => {
       key: 'status',
       header: 'Estado',
       sortable: true,
-      render: (value, row) => <StatusBadge job={row} />
+      render: (_, row) => <StatusBadge status={row.status} />
     },
     {
       key: 'progress',
       header: 'Progreso',
       sortable: true,
-      render: (value, row) => (
+      render: (_, row) => (
         <div className="w-full">
           <div className="flex justify-between text-sm mb-1">
             <span>{row.progress}%</span>
@@ -215,13 +215,13 @@ const BatchExecution = () => {
       key: 'priority',
       header: 'Prioridad',
       sortable: true,
-      render: (value, row) => <PriorityBadge job={row} />
+      render: (_, row) => <PriorityBadge priority={row.priority} />
     },
     {
       key: 'startTime',
       header: 'Tiempo',
       sortable: true,
-      render: (value, row) => (
+      render: (_, row) => (
         <div className="text-sm">
           {row.status === 'scheduled' && row.scheduledTime && (
             <div className="text-purple-600">
@@ -374,7 +374,25 @@ const BatchExecution = () => {
 
       {/* Real-time Monitoring Panel */}
       {isMonitoring && (
-        <RealTimeMonitoringPanel />
+        <RealTimeMonitoringPanel
+          isMonitoring={isMonitoring}
+          metrics={{
+            totalThroughput: jobs.filter(j => j.status === 'running').reduce((acc, job) => acc + (job.recordsProcessed / ((Date.now() - (job.startTime?.getTime() || 0)) / 60000)), 0),
+            averageJobDuration: jobs.filter(j => j.status === 'completed').reduce((acc, job) => acc + job.estimatedDuration, 0) / Math.max(jobs.filter(j => j.status === 'completed').length, 1),
+            systemLoad: Math.random() * 100, // Simulado
+            queueLength: jobs.filter(j => j.status === 'pending' || j.status === 'scheduled').length,
+            activeJobs: jobs.filter(j => j.status === 'running').length
+          }}
+          notifications={[
+            // Aquí puedes agregar notificaciones dinámicas basadas en el estado de los trabajos
+          ]}
+          onStartMonitoring={startMonitoring}
+          onStopMonitoring={stopMonitoring}
+          onClearNotifications={() => {
+            // Implementar lógica para limpiar notificaciones
+            console.log('Clearing notifications');
+          }}
+        />
       )}
 
       {/* Job Configurator Modal */}
@@ -421,13 +439,13 @@ const BatchExecution = () => {
                     <div>
                       <span className="text-sm font-medium text-gray-500">Estado:</span>
                       <div className="mt-1">
-                        <StatusBadge job={selectedJob} />
+                        <StatusBadge status={selectedJob.status} />
                       </div>
                     </div>
                     <div>
                       <span className="text-sm font-medium text-gray-500">Prioridad:</span>
                       <div className="mt-1">
-                        <PriorityBadge job={selectedJob} />
+                        <PriorityBadge priority={selectedJob.priority} />
                       </div>
                     </div>
                   </div>
