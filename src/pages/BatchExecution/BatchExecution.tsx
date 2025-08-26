@@ -588,7 +588,7 @@ const BatchExecution = () => {
                   >
                     <option value="">Seleccionar técnica</option>
                     {techniques.map(technique => (
-                      <option key={technique} value={technique}>{technique}</option>
+                      <option  key={technique} value={technique}>{technique}</option>
                     ))}
                   </select>
                 </div>
@@ -662,11 +662,11 @@ const BatchExecution = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Técnica:</span>
-                        <span className="font-medium">{selectedJob.technique}</span>
+                        <span className="font-medium text-gray-800">{selectedJob.technique}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Creado por:</span>
-                        <span className="font-medium">{selectedJob.createdBy}</span>
+                        <span className="font-medium text-gray-800">{selectedJob.createdBy}</span>
                       </div>
                     </div>
                   </div>
@@ -676,11 +676,11 @@ const BatchExecution = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Origen:</span>
-                        <span className="font-medium">{selectedJob.sourceTable}</span>
+                        <span className="font-medium text-gray-800">{selectedJob.sourceTable}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Destino:</span>
-                        <span className="font-medium">{selectedJob.targetTable}</span>
+                        <span className="font-medium text-gray-800">{selectedJob.targetTable}</span>
                       </div>
                     </div>
                   </div>
@@ -691,8 +691,8 @@ const BatchExecution = () => {
                     <h3 className="text-lg font-medium text-gray-900 mb-3">Progreso</h3>
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm">
-                        <span>Progreso: {selectedJob.progress}%</span>
-                        <span>{formatNumber(selectedJob.recordsProcessed)} / {formatNumber(selectedJob.recordsTotal)}</span>
+                        <span className="text-gray-800">Progreso: {selectedJob.progress}%</span>
+                        <span className="text-gray-800">{formatNumber(selectedJob.recordsProcessed)} / {formatNumber(selectedJob.recordsTotal)}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3">
                         <div 
@@ -721,12 +721,12 @@ const BatchExecution = () => {
                       {selectedJob.scheduledTime && (
                         <div className="flex justify-between">
                           <span className="text-gray-600">Programado:</span>
-                          <span className="font-medium">{selectedJob.scheduledTime.toLocaleString('es-CL')}</span>
+                          <span className="font-medium text-gray-800">{selectedJob.scheduledTime.toLocaleString('es-CL')}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
                         <span className="text-gray-600">Duración estimada:</span>
-                        <span className="font-medium">{formatDuration(selectedJob.estimatedDuration)}</span>
+                        <span className="font-medium text-gray-800">{formatDuration(selectedJob.estimatedDuration)}</span>
                       </div>
                     </div>
                   </div>
