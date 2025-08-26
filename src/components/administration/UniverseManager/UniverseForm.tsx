@@ -123,7 +123,7 @@ const UniverseForm: React.FC<UniverseFormProps> = ({ universe, onSave, onClose }
                   type="text"
                   value={formData.clientId}
                   onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-4 text-gray-800 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.clientId ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="CLI001"
@@ -143,7 +143,7 @@ const UniverseForm: React.FC<UniverseFormProps> = ({ universe, onSave, onClose }
                   type="text"
                   value={formData.clientName}
                   onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-4 py-3 text-gray-800 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.clientName ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Nombre del cliente"
@@ -164,7 +164,7 @@ const UniverseForm: React.FC<UniverseFormProps> = ({ universe, onSave, onClose }
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-4 py-3 text-gray-800 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.description ? 'border-red-300' : 'border-gray-300'
                 }`}
                 placeholder="Descripción del universo de datos"
@@ -184,7 +184,7 @@ const UniverseForm: React.FC<UniverseFormProps> = ({ universe, onSave, onClose }
                 type="number"
                 value={formData.recordsTotal}
                 onChange={(e) => setFormData({ ...formData, recordsTotal: parseInt(e.target.value) || 0 })}
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full text-gray-800 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.recordsTotal ? 'border-red-300' : 'border-gray-300'
                 }`}
                 placeholder="100000"
@@ -232,7 +232,7 @@ const UniverseForm: React.FC<UniverseFormProps> = ({ universe, onSave, onClose }
                         type="text"
                         value={rule.field}
                         onChange={(e) => updateRule(index, 'field', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border text-gray-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                         placeholder="rut, email, phone..."
                       />
                     </div>
@@ -243,7 +243,7 @@ const UniverseForm: React.FC<UniverseFormProps> = ({ universe, onSave, onClose }
                       <select
                         value={rule.technique}
                         onChange={(e) => updateRule(index, 'technique', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border text-gray-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       >
                         <option value="masking">Enmascaramiento</option>
                         <option value="pseudonymization">Pseudonimización</option>
@@ -259,7 +259,7 @@ const UniverseForm: React.FC<UniverseFormProps> = ({ universe, onSave, onClose }
                       <select
                         value={rule.priority}
                         onChange={(e) => updateRule(index, 'priority', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border text-gray-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       >
                         <option value="high">Alta</option>
                         <option value="medium">Media</option>

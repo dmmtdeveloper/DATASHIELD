@@ -7,10 +7,9 @@ import Register from './pages/auth/Register';
 import Dashboard from './pages/Dashboard/Dashboard';
 import UniverseAdministration from './pages/UniverseAdministration/UniverseAdministration';
 import DataDiscovery from './pages/DataDiscovery/DataDiscovery';
+import AttributeCatalog from './pages/AttributeCatalog/AttributeCatalog';
 
-// Eliminar esta línea temporal:
-// const DataDiscovery = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Descubrimiento de Datos</h2><p>En desarrollo...</p></div>;
-const AttributeCatalog = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Catálogo de Atributos</h2><p>En desarrollo...</p></div>;
+// Componentes temporales para las rutas restantes
 const BatchExecution = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Ejecución Batch</h2><p>En desarrollo...</p></div>;
 const OnlineExecution = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Ejecución Online</h2><p>En desarrollo...</p></div>;
 const AuditTrail = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Auditoría</h2><p>En desarrollo...</p></div>;
