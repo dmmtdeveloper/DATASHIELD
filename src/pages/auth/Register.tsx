@@ -1,92 +1,191 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Eye, EyeOff, Lock, Mail, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import Form, { type FormField } from '../../components/ui/Form/Form';
 
 const Register: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const { register, isLoading } = useAuth();
+  const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Por favor, completa todos los campos');
-      return false;
+  const formFields: FormField[] = [
+    {
+      name: 'name',
+      label: 'Nombre Completo',
+      type: 'text',
+      placeholder: 'Tu nombre completo',
+      required: true,
+      validation: {
+        minLength: 2,
+        maxLength: 50,
+        pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+        custom: (value: string) => {
+          if (value && value.trim().length < 2) {
+            return 'El nombre debe tener al menos 2 caracteres';
+          }
+          return null;
+        }
+      },
+      description: 'Ingresa tu nombre y apellidos'
+    },
+    {
+      name: 'email',
+      label: 'Correo Electrónico',
+      type: 'email',
+      placeholder: 'tu@email.com',
+      required: true,
+      validation: {
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        custom: (value: string) => {
+          if (value && !value.includes('@')) {
+            return 'Debe ser un correo electrónico válido';
+          }
+          return null;
+        }
+      },
+      description: 'Usaremos este correo para enviarte notificaciones'
+    },
+    {
+      name: 'password',
+      label: 'Contraseña',
+      type: 'password',
+      placeholder: 'Mínimo 6 caracteres',
+      required: true,
+      validation: {
+        minLength: 6,
+        maxLength: 100,
+        custom: (value: string) => {
+          if (value && value.length < 6) {
+            return 'La contraseña debe tener al menos 6 caracteres';
+          }
+          if (value && !/(?=.*[a-z])/.test(value)) {
+            return 'La contraseña debe contener al menos una letra minúscula';
+          }
+          if (value && !/(?=.*[A-Z])/.test(value)) {
+            return 'La contraseña debe contener al menos una letra mayúscula';
+          }
+          if (value && !/(?=.*\d)/.test(value)) {
+            return 'La contraseña debe contener al menos un número';
+          }
+          return null;
+        }
+      },
+      description: 'Debe contener mayúsculas, minúsculas y números'
+    },
+    {
+      name: 'confirmPassword',
+      label: 'Confirmar Contraseña',
+      type: 'password',
+      placeholder: 'Repite tu contraseña',
+      required: true,
+      validation: {
+        custom: (value: string, formData?: Record<string, any>) => {
+          if (!value) {
+            return 'Debes confirmar tu contraseña';
+          }
+          if (formData && value !== formData.password) {
+            return 'Las contraseñas no coinciden';
+          }
+          return null;
+        }
+      },
+      description: 'Debe ser igual a la contraseña anterior'
+    },
+    {
+      name: 'acceptTerms',
+      label: 'Acepto los términos y condiciones de uso',
+      type: 'checkbox',
+      required: true,
+      validation: {
+        custom: (value: boolean) => {
+          if (!value) {
+            return 'Debes aceptar los términos y condiciones';
+          }
+          return null;
+        }
+      }
     }
+  ];
 
-    if (formData.name.length < 2) {
-      setError('El nombre debe tener al menos 2 caracteres');
-      return false;
-    }
-
-    if (!formData.email.includes('@')) {
-      setError('Por favor, ingresa un email válido');
-      return false;
-    }
-
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
-      return false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (formData: Record<string, any>) => {
     setError('');
     setSuccess(false);
 
-    if (!validateForm()) {
+    // Validaciones adicionales antes del envío
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
       return;
     }
 
-    const success = await register(formData.name, formData.email, formData.password);
-    if (success) {
-      setSuccess(true);
-    } else {
-      setError('Error al crear la cuenta. Intenta nuevamente.');
+    if (!formData.acceptTerms) {
+      setError('Debes aceptar los términos y condiciones');
+      return;
     }
+
+    try {
+      const success = await register(formData.name, formData.email, formData.password);
+      if (success) {
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } else {
+        setError('Error al crear la cuenta. El email podría estar en uso o hay un problema con el servidor.');
+      }
+    } catch (err) {
+      console.error('Error en registro:', err);
+      setError('Error inesperado al crear la cuenta. Por favor, intenta de nuevo.');
+    }
+  };
+
+  const handleCancel = () => {
+    navigate('/login');
   };
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full">
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-              ¡Cuenta creada exitosamente!
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Tu cuenta ha sido creada y ya puedes acceder al sistema.
-            </p>
-            <Link
-              to="/login"
-              className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition-colors font-medium"
-            >
-              Ir a Iniciar Sesión
-            </Link>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="mx-auto h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-white font-bold text-xl">Z</span>
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Sistema de Anonimización
+            </h2>
+            <p className="text-gray-600">Zurich Seguros</p>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center border border-gray-200">
+            <div className="mb-6">
+              <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-4" />
+              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+                ¡Cuenta creada exitosamente!
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Tu cuenta ha sido registrada correctamente en el sistema.
+              </p>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-green-700">
+                  <strong>¡Bienvenido al sistema!</strong><br />
+                  Ya puedes iniciar sesión con tus credenciales.
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <p className="text-sm text-gray-500">
+                Serás redirigido al login en 3 segundos...
+              </p>
+              <Link
+                to="/login"
+                className="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+              >
+                Ir al login ahora
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -94,153 +193,92 @@ const Register: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        {/* Header */}
         <div className="text-center">
+          <div className="mx-auto h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+            <span className="text-white font-bold text-xl">Z</span>
+          </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             Sistema de Anonimización
           </h2>
           <p className="text-gray-600">Zurich Seguros</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-8">
+        {/* Form Container */}
+        <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
           <div className="mb-6">
-            <h3 className="text-2xl font-semibold text-gray-800 text-center">
+            <h3 className="text-2xl font-semibold text-gray-800 text-center mb-2">
               Crear Cuenta
             </h3>
+            <p className="text-gray-600 text-center text-sm">
+              Completa los siguientes campos para registrarte
+            </p>
           </div>
 
+          {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center">
-              <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-              <span className="text-red-700 text-sm">{error}</span>
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+              <AlertCircle className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-red-700 text-sm font-medium">Error al crear la cuenta</p>
+                <p className="text-red-600 text-sm mt-1">{error}</p>
+              </div>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre Completo
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                  placeholder="Tu nombre completo"
-                  required
-                />
-              </div>
+          {/* Form */}
+          <Form
+            fields={formFields}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            submitLabel={isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+            cancelLabel="Volver al Login"
+            loading={isLoading}
+            layout="vertical"
+            columns={1}
+            className="space-y-4"
+          />
+
+          {/* Terms and Privacy */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="text-xs text-gray-500 text-center space-y-2">
+              <p>
+                Al registrarte, aceptas nuestros{' '}
+                <a href="#" className="text-blue-600 hover:text-blue-500 underline">
+                  Términos de Servicio
+                </a>{' '}
+                y{' '}
+                <a href="#" className="text-blue-600 hover:text-blue-500 underline">
+                  Política de Privacidad
+                </a>
+              </p>
+              <p>
+                Tu información estará protegida según las normativas de seguridad de Zurich Seguros
+              </p>
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Correo Electrónico
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                  placeholder="tu@email.com"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                  placeholder="Mínimo 6 caracteres"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirmar Contraseña
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                  placeholder="Repite tu contraseña"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-            >
-              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
-            </button>
-          </form>
-
+          {/* Login Link */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               ¿Ya tienes una cuenta?{' '}
-              <Link to="/login" className="text-blue-600 hover:text-blue-500 font-medium">
+              <Link 
+                to="/login" 
+                className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
+              >
                 Inicia sesión aquí
               </Link>
             </p>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center">
+          <p className="text-xs text-gray-500">
+            © 2025 Zurich Seguros. Sistema de Anonimización de Datos.
+          </p>
         </div>
       </div>
     </div>

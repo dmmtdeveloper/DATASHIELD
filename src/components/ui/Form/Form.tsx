@@ -16,7 +16,7 @@ export interface FormField {
     maxLength?: number;
     min?: number;
     max?: number;
-    custom?: (value: any) => string | null;
+    custom?: (value: any, formData?: Record<string, any>) => string | null;
   };
   className?: string;
   description?: string;
@@ -64,7 +64,7 @@ const Form: React.FC<FormProps> = ({
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const validateField = useCallback((field: FormField, value: any): string | null => {
+  const validateField = useCallback((field: FormField, value: any, allFormData?: Record<string, any>): string | null => {
     // Campo requerido
     if (field.required && (!value || (typeof value === 'string' && !value.trim()))) {
       return `${field.label} es requerido`;
@@ -100,22 +100,23 @@ const Form: React.FC<FormProps> = ({
       return `${field.label} debe ser menor o igual a ${validation.max}`;
     }
 
-    // Validación personalizada
+    // Validación personalizada - ahora pasa formData también
     if (validation.custom) {
-      return validation.custom(value);
+      return validation.custom(value, allFormData || formData);
     }
 
     return null;
-  }, []);
+  }, [formData]);
 
   const handleFieldChange = (fieldName: string, value: any) => {
-    setFormData(prev => ({ ...prev, [fieldName]: value }));
+    const updatedFormData = { ...formData, [fieldName]: value };
+    setFormData(updatedFormData);
     
     // Validar campo si ya fue tocado
     if (touched[fieldName]) {
       const field = fields.find(f => f.name === fieldName);
       if (field) {
-        const error = validateField(field, value);
+        const error = validateField(field, value, updatedFormData);
         setErrors(prev => ({ ...prev, [fieldName]: error || '' }));
       }
     }
@@ -126,7 +127,7 @@ const Form: React.FC<FormProps> = ({
     
     const field = fields.find(f => f.name === fieldName);
     if (field) {
-      const error = validateField(field, formData[fieldName]);
+      const error = validateField(field, formData[fieldName], formData);
       setErrors(prev => ({ ...prev, [fieldName]: error || '' }));
     }
   };
@@ -139,7 +140,7 @@ const Form: React.FC<FormProps> = ({
     let hasErrors = false;
     
     fields.forEach(field => {
-      const error = validateField(field, formData[field.name]);
+      const error = validateField(field, formData[field.name], formData);
       if (error) {
         newErrors[field.name] = error;
         hasErrors = true;
@@ -256,7 +257,8 @@ const Form: React.FC<FormProps> = ({
               <button
                 type="button"
                 onClick={() => togglePasswordVisibility(field.name)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                tabIndex={-1}
               >
                 {showPasswords[field.name] ? 
                   <EyeOff className="w-4 h-4" /> : 
