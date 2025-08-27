@@ -91,7 +91,7 @@ const DatabaseScanner: React.FC = () => {
 
       <div className="flex items-center gap-4">
         <button 
-          className={`btn-primary flex items-center gap-2 ${
+          className={`bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
             scanning ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           onClick={handleScan}
@@ -105,7 +105,7 @@ const DatabaseScanner: React.FC = () => {
           <div className="flex items-center gap-3">
             <div className="w-48 bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-zurich-blue-500 h-2 rounded-full transition-all duration-300" 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
                 style={{width: `${progress}%`}}
               ></div>
             </div>
