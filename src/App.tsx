@@ -9,10 +9,11 @@ import UniverseAdministration from './pages/UniverseAdministration/UniverseAdmin
 import DataDiscovery from './pages/DataDiscovery/DataDiscovery';
 import AttributeCatalog from './pages/AttributeCatalog/AttributeCatalog';
 import BatchExecution from './pages/BatchExecution/BatchExecution';
+import OnlineExecution from './pages/OnlineExecution/OnlineExecution';
 
 // Componentes temporales para las rutas restantes
 // const BatchExecution = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Ejecución Batch</h2><p>En desarrollo...</p></div>;
-const OnlineExecution = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Ejecución Online</h2><p>En desarrollo...</p></div>;
+// const OnlineExecution = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Ejecución Online</h2><p>En desarrollo...</p></div>;
 const AuditTrail = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Auditoría</h2><p>En desarrollo...</p></div>;
 const Monitoring = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Monitoreo</h2><p>En desarrollo...</p></div>;
 
