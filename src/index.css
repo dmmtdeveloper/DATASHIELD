@@ -11,29 +11,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
-  /* Variables de colores Zurich mejoradas */
-  --zurich-blue-50: #eff6ff;
-  --zurich-blue-100: #dbeafe;
-  --zurich-blue-200: #bfdbfe;
-  --zurich-blue-300: #93c5fd;
-  --zurich-blue-400: #60a5fa;
-  --zurich-blue-500: #3b82f6;
-  --zurich-blue-600: #2563eb;
-  --zurich-blue-700: #1d4ed8;
-  --zurich-blue-800: #1e40af;
-  --zurich-blue-900: #1e3a8a;
-  
-  --zurich-orange-50: #fff7ed;
-  --zurich-orange-100: #ffedd5;
-  --zurich-orange-200: #fed7aa;
-  --zurich-orange-300: #fdba74;
-  --zurich-orange-400: #fb923c;
-  --zurich-orange-500: #f97316;
-  --zurich-orange-600: #ea580c;
-  --zurich-orange-700: #c2410c;
-  --zurich-orange-800: #9a3412;
-  --zurich-orange-900: #7c2d12;
 }
 
 button {
@@ -43,28 +20,20 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background: linear-gradient(135deg, var(--zurich-blue-500), var(--zurich-blue-600));
-  color: white;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 button:hover {
-  background: linear-gradient(135deg, var(--zurich-blue-600), var(--zurich-blue-700));
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-  border-color: var(--zurich-blue-400);
 }
 
 button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 button:focus,
 button:focus-visible {
-  outline: 2px solid var(--zurich-blue-400);
   outline-offset: 2px;
 }
 
@@ -81,21 +50,7 @@ button:disabled {
     color: #213547;
     background-color: #ffffff;
   }
-  a:hover {
-    color: var(--zurich-blue-600);
-  }
-  button {
-    background: linear-gradient(135deg, var(--zurich-blue-500), var(--zurich-blue-600));
-    color: white;
-    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.15);
-  }
-  
-  button:hover {
-    background: linear-gradient(135deg, var(--zurich-blue-600), var(--zurich-blue-700));
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25);
-  }
 }
-
 
 @layer base {
   body {
@@ -106,95 +61,6 @@ button:disabled {
 @layer components {
   @import "tailwindcss";
   
-  /* Estilos personalizados para la aplicación */
-  /* Componentes personalizados */
-@layer components {
-  .btn-primary {
-    background: linear-gradient(135deg, var(--zurich-blue-500), var(--zurich-blue-600));
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    border: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
-  }
-  
-  .btn-primary:hover {
-    background: linear-gradient(135deg, var(--zurich-blue-600), var(--zurich-blue-700));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-  }
-  
-  .btn-secondary {
-    background: linear-gradient(135deg, var(--zurich-orange-500), var(--zurich-orange-600));
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    border: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(249, 115, 22, 0.2);
-  }
-  
-  .btn-secondary:hover {
-    background: linear-gradient(135deg, var(--zurich-orange-600), var(--zurich-orange-700));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
-  }
-  
-  .btn-success {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    border: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-  }
-  
-  .btn-success:hover {
-    background: linear-gradient(135deg, #059669, #047857);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  }
-  
-  .btn-danger {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    border: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
-  }
-  
-  .btn-danger:hover {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-  }
-  
-  .btn-outline {
-    background: transparent;
-    color: var(--zurich-blue-600);
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border: 2px solid var(--zurich-blue-500);
-    border-radius: 0.5rem;
-    transition: all 0.3s ease;
-  }
-  
-  .btn-outline:hover {
-    background: var(--zurich-blue-500);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
-  }
-}
-
   .card {
     background-color: white;
     border-radius: 0.5rem;
@@ -258,61 +124,6 @@ button:disabled {
   }
 }
 
-  .card-header {
-    border-bottom: 1px solid rgb(229, 231, 235);
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  /* Estilos para badges de estado */
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .status-active {
-    background-color: #dcfce7;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-  }
-
-  .status-pending {
-    background-color: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fde68a;
-  }
-
-  .status-inactive {
-    background-color: #f3f4f6;
-    color: #374151;
-    border: 1px solid #d1d5db;
-  }
-
-  /* Estilos para encabezados de tabla */
-  .table-header {
-    background-color: #f8fafc;
-    color: #374151;
-    font-weight: 600;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid #e5e7eb;
-  }
-
-  .table-header th {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #374151;
-  }
-
-
 /* Animaciones personalizadas */
 @layer utilities {
   .fade-in {
@@ -343,33 +154,4 @@ button:disabled {
     }
   }
 }
-
-  /* Animaciones personalizadas */
-  .fade-in {
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .slide-in {
-    animation: slideIn 0.3s ease-out;
-  }
-  
-  @keyframes slideIn {
-    from {
-      transform: translateX(-100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
 

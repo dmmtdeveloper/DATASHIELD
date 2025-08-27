@@ -900,7 +900,7 @@ const BatchJobConfigurator: React.FC<{ onSave: (config: BatchJobConfig) => void;
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-gray-700/90  flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
@@ -1009,7 +1009,7 @@ const BatchJobConfigurator: React.FC<{ onSave: (config: BatchJobConfig) => void;
             ) : (
               <button
                 onClick={() => setCurrentStep(Math.min(steps.length, currentStep + 1))}
-                className="btn-primary"
+                className="px-4 py-2 text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente
               </button>

@@ -99,7 +99,7 @@ const DataDiscovery = () => {
             Anterior
           </button>
           <button 
-            className={`btn-primary flex items-center gap-2 ${
+            className={`px-6 flex items-center gap-2 py-2 text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed ${
               activeStep === steps.length - 1 ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             onClick={handleNext}

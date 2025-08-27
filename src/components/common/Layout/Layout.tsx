@@ -45,7 +45,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-72' : 'w-16'} bg-white shadow-lg transition-all duration-300 flex flex-col border-r border-gray-200`}>
+      <div className={`${sidebarOpen ? 'w-72' : 'w-24'} bg-white shadow-lg transition-all duration-300 flex flex-col border-r border-gray-200`}>
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -56,7 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             )}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-blue-50 transition-colors text-blue-600"
+              className=""
             >
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -74,7 +74,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <li key={item.text}>
                   <button
                     onClick={() => navigate(item.path)}
-                    className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors duration-200 ${
+                    className={`w-full  flex items-center px-3 py-2 rounded-lg transition-colors duration-200 ${
                       isActive
                         ? 'bg-blue-600 text-white shadow-md'
                         : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
@@ -118,7 +118,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           ) : (
             <button
               onClick={handleLogout}
-              className="w-full p-2 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+              className="w-full p-2 text-gray-100 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
               title="Cerrar Sesión"
             >
               <LogOut size={20} className="mx-auto" />
