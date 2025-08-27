@@ -1,4 +1,4 @@
-import { AnonymizationTechnique } from '../../../types/anonymization';
+import type { AnonymizationTechnique } from '../../../types/anonymization';
 import { Key } from 'lucide-react';
 
 export class TokenizationService {

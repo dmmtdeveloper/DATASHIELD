@@ -26,12 +26,18 @@ export interface DataTableProps<T> {
   onRowSelect?: (selectedRows: T[]) => void;
   selectable?: boolean;
   className?: string;
+  // ✅ Cambio: Permitir tanto array estático como función dinámica
   actions?: {
-  label: string;
+    label: string;
     onClick: (row: T) => void;
-    icon?: LucideIcon; // Cambio aquí
+    icon?: LucideIcon;
     variant?: 'primary' | 'secondary' | 'danger' | 'outline';
-  }[];
+  }[] | ((row: T) => {
+    label: string;
+    onClick: (row: T) => void;
+    icon?: LucideIcon;
+    variant?: 'primary' | 'secondary' | 'danger' | 'outline';
+  }[]);
 }
 
 type SortDirection = 'asc' | 'desc' | null;
@@ -273,23 +279,26 @@ function DataTable<T extends Record<string, any>>({
                       }
                     </td>
                   ))}
-                  {actions.length > 0 && (
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        {actions.map((action, actionIndex) => (
-                          <Button
-                            key={actionIndex}
-                            size="sm"
-                            variant={action.variant || 'outline'}
-                            icon={action.icon}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              action.onClick(row);
-                            }}
-                          >
-                            {action.label}
-                          </Button>
-                        ))}
+                  // En la sección de renderizado de la tabla, dentro del tbody
+                  {/* Columna de acciones */}
+                  {(actions && actions.length > 0) && (
+                    <td className="px-4 py-3 text-right text-sm font-medium">
+                      <div className="flex items-center gap-2 justify-end">
+                        {/* ✅ Cambio: Manejar tanto array como función */}
+                        {(typeof actions === 'function' ? actions(row) : actions).map((action, actionIndex) => {
+                          const Icon = action.icon;
+                          return (
+                            <Button
+                              key={actionIndex}
+                              variant={action.variant || 'outline'}
+                              size="sm"
+                              onClick={() => action.onClick(row)}
+                              icon={Icon}
+                            >
+                              {action.label}
+                            </Button>
+                          );
+                        })}
                       </div>
                     </td>
                   )}
