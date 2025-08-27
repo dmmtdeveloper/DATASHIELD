@@ -23,20 +23,21 @@ const INITIAL_JOBS: BatchJob[] = [
   {
     id: '2',
     name: 'Anonimización Transacciones Bancarias',
-    description: 'Anonimización de datos de transacciones bancarias',
-    technique: 'Hashing (SHA-256)',
+    description: 'Anonimización de datos sensibles en transacciones bancarias',
+    technique: 'Masking (XOR)',
     sourceTable: 'transactions_raw',
     targetTable: 'transactions_anonymized',
     status: 'pending',
     progress: 0,
-    recordsTotal: 0,
+    recordsTotal: 500000,
     recordsProcessed: 0,
     startTime: undefined,
     priority: 'medium',
-    estimatedDuration: 60,
+    estimatedDuration: 120,
     createdBy: 'admin@zurich.cl',
-    parameters: { algorithm: 'SHA-256', salt: 'enabled' }
+    parameters: { algorithm: 'XOR', mask: '****' }
   },
+  
 ];
 
 export const useBatchJobs = () => {

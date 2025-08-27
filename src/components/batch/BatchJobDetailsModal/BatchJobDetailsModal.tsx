@@ -4,6 +4,8 @@ import type { BatchJob } from '../../../types/batch.types';
 import Button from '../../ui/Button/Button';
 import StatusBadge from '../StatusBadge/StatusBadge';
 import PriorityBadge from '../PriorityBadge/PriorityBadge';
+import ConfirmationDialog from '../../ui/ConfirmationDialog/ConfirmationDialog';
+import useConfirmation from '../../../hooks/useConfirmation';
 
 interface BatchJobDetailsModalProps {
   job: BatchJob;
@@ -16,6 +18,8 @@ const BatchJobDetailsModal: React.FC<BatchJobDetailsModalProps> = ({
   onClose,
   onJobAction
 }) => {
+  const { confirmation, showConfirmation, hideConfirmation, handleConfirm } = useConfirmation();
+
   const formatDuration = (minutes: number): string => {
     if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
@@ -77,188 +81,213 @@ const BatchJobDetailsModal: React.FC<BatchJobDetailsModalProps> = ({
     return actions;
   };
 
-  const handleAction = (action: string) => {
-    if (action === 'delete') {
-      if (window.confirm('¿Estás seguro de que deseas eliminar este trabajo?')) {
-        onJobAction(job.id, action);
+  const handleDeleteConfirmation = () => {
+    showConfirmation({
+      title: 'Confirmar eliminación',
+      message: '¿Estás seguro de que deseas eliminar este trabajo? Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      severity: 'error',
+      onConfirm: () => {
+        onJobAction(job.id, 'delete');
         onClose();
       }
+    });
+  };
+
+  const handleAction = (action: string) => {
+    if (action === 'delete') {
+      handleDeleteConfirmation();
     } else {
       onJobAction(job.id, action);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-4">
-            <h2 className="text-2xl font-bold text-gray-900">{job.name}</h2>
-            <StatusBadge status={job.status} />
-            <PriorityBadge priority={job.priority} />
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Settings className="w-5 h-5 mr-2 text-blue-600" />
-                Información General
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Descripción</label>
-                  <p className="text-gray-900">{job.description}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Técnica</label>
-                  <p className="text-gray-900">{job.technique}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <User className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Creado por:</span>
-                  <span className="text-gray-900">{job.createdBy}</span>
-                </div>
-              </div>
+    <>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center space-x-4">
+              <h2 className="text-2xl font-bold text-gray-900">{job.name}</h2>
+              <StatusBadge status={job.status} />
+              <PriorityBadge priority={job.priority} />
             </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Database className="w-5 h-5 mr-2 text-blue-600" />
-                Datos
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Tabla Origen</label>
-                  <p className="text-gray-900 font-mono text-sm">{job.sourceTable}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Tabla Destino</label>
-                  <p className="text-gray-900 font-mono text-sm">{job.targetTable}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Total de Registros</label>
-                  <p className="text-gray-900">{formatNumber(job.recordsTotal)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Progreso</h3>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">Progreso del Trabajo</span>
-                <span className="text-sm font-medium text-gray-900">{job.progress}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${job.progress}%` }}
-                ></div>
-              </div>
-              <div className="flex justify-between items-center mt-2 text-sm text-gray-600">
-                <span>{formatNumber(job.recordsProcessed)} / {formatNumber(job.recordsTotal)} registros</span>
-                {job.estimatedTimeRemaining && (
-                  <span className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1" />
-                    {formatDuration(job.estimatedTimeRemaining)} restante
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Timing Information */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Inicio</span>
-              </div>
-              <p className="text-gray-900">{formatDate(job.startTime)}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Fin</span>
-              </div>
-              <p className="text-gray-900">{formatDate(job.endTime)}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <Clock className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Duración Estimada</span>
-              </div>
-              <p className="text-gray-900">{formatDuration(job.estimatedDuration)}</p>
-            </div>
-          </div>
-
-          {/* Performance Metrics */}
-          {(job.throughput || job.errorCount !== undefined) && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Métricas de Rendimiento</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {job.throughput && (
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <div className="text-sm font-medium text-green-700 mb-1">Throughput</div>
-                    <div className="text-2xl font-bold text-green-900">
-                      {formatNumber(Math.round(job.throughput))} <span className="text-sm font-normal">reg/min</span>
-                    </div>
-                  </div>
-                )}
-                {job.errorCount !== undefined && (
-                  <div className="bg-red-50 rounded-lg p-4">
-                    <div className="text-sm font-medium text-red-700 mb-1">Errores</div>
-                    <div className="text-2xl font-bold text-red-900">{formatNumber(job.errorCount)}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Parameters */}
-          {Object.keys(job.parameters).length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Parámetros de Configuración</h3>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                  {JSON.stringify(job.parameters, null, 2)}
-                </pre>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
-          <Button variant="outline" onClick={onClose}>
-            Cerrar
-          </Button>
-          {getAvailableActions().map((action) => (
-            <Button
-              key={action.action}
-              variant={action.variant}
-              icon={action.icon}
-              onClick={() => handleAction(action.action)}
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              {action.label}
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Basic Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <Settings className="w-5 h-5 mr-2 text-blue-600" />
+                  Información General
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Descripción</label>
+                    <p className="text-gray-900">{job.description}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Técnica</label>
+                    <p className="text-gray-900">{job.technique}</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <User className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-500">Creado por:</span>
+                    <span className="text-gray-900">{job.createdBy}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <Database className="w-5 h-5 mr-2 text-blue-600" />
+                  Datos
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Tabla Origen</label>
+                    <p className="text-gray-900 font-mono text-sm">{job.sourceTable}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Tabla Destino</label>
+                    <p className="text-gray-900 font-mono text-sm">{job.targetTable}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Total de Registros</label>
+                    <p className="text-gray-900">{formatNumber(job.recordsTotal)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">Progreso</h3>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-gray-700">Progreso del Trabajo</span>
+                  <span className="text-sm font-medium text-gray-900">{job.progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${job.progress}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between items-center mt-2 text-sm text-gray-600">
+                  <span>{formatNumber(job.recordsProcessed)} / {formatNumber(job.recordsTotal)} registros</span>
+                  {job.estimatedTimeRemaining && (
+                    <span className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {formatDuration(job.estimatedTimeRemaining)} restante
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Timing Information */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700">Inicio</span>
+                </div>
+                <p className="text-gray-900">{formatDate(job.startTime)}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700">Fin</span>
+                </div>
+                <p className="text-gray-900">{formatDate(job.endTime)}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700">Duración Estimada</span>
+                </div>
+                <p className="text-gray-900">{formatDuration(job.estimatedDuration)}</p>
+              </div>
+            </div>
+
+            {/* Performance Metrics */}
+            {(job.throughput || job.errorCount !== undefined) && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Métricas de Rendimiento</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {job.throughput && (
+                    <div className="bg-green-50 rounded-lg p-4">
+                      <div className="text-sm font-medium text-green-700 mb-1">Throughput</div>
+                      <div className="text-2xl font-bold text-green-900">
+                        {formatNumber(Math.round(job.throughput))} <span className="text-sm font-normal">reg/min</span>
+                      </div>
+                    </div>
+                  )}
+                  {job.errorCount !== undefined && (
+                    <div className="bg-red-50 rounded-lg p-4">
+                      <div className="text-sm font-medium text-red-700 mb-1">Errores</div>
+                      <div className="text-2xl font-bold text-red-900">{formatNumber(job.errorCount)}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Parameters */}
+            {Object.keys(job.parameters).length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Parámetros de Configuración</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <pre className="text-sm text-gray-700 whitespace-pre-wrap">
+                    {JSON.stringify(job.parameters, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+            <Button variant="outline" onClick={onClose}>
+              Cerrar
             </Button>
-          ))}
+            {getAvailableActions().map((action) => (
+              <Button
+                key={action.action}
+                variant={action.variant}
+                icon={action.icon}
+                onClick={() => handleAction(action.action)}
+              >
+                {action.label}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmation.isOpen}
+        title={confirmation.title}
+        message={confirmation.message}
+        confirmText={confirmation.confirmText}
+        cancelText={confirmation.cancelText}
+        severity={confirmation.severity}
+        onConfirm={handleConfirm}
+        onCancel={hideConfirmation}
+      />
+    </>
   );
 };
 

@@ -292,7 +292,11 @@ function DataTable<T extends Record<string, any>>({
                               key={actionIndex}
                               variant={action.variant || 'outline'}
                               size="sm"
-                              onClick={() => action.onClick(row)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                action.onClick(row);
+                              }}
                               icon={Icon}
                             >
                               {action.label}

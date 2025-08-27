@@ -3,8 +3,10 @@ import { Eye, Play, Pause, RotateCcw, Trash2 } from 'lucide-react';
 import DataTable, { type Column } from '../../ui/DataTable';
 import StatusBadge from '../StatusBadge/StatusBadge';
 import PriorityBadge from '../PriorityBadge/PriorityBadge';
+import ConfirmationDialog from '../../ui/ConfirmationDialog/ConfirmationDialog';
 import { formatDuration, formatNumber } from '../../../services/utils/batch.utils';
-import type { BatchJob } from '../../../types/batch.types';
+import useConfirmation from '../../../hooks/useConfirmation';
+import type { BatchJob, NewJobForm } from '../../../types/batch.types';
 
 interface BatchJobsTableProps {
   jobs: BatchJob[];
@@ -19,6 +21,8 @@ const BatchJobsTable: React.FC<BatchJobsTableProps> = ({
   onJobSelect,
   onRowSelect
 }) => {
+  const { confirmation, showConfirmation, hideConfirmation, handleConfirm } = useConfirmation();
+
   const columns: Column<BatchJob>[] = [
     {
       key: 'name',
@@ -118,13 +122,42 @@ const BatchJobsTable: React.FC<BatchJobsTableProps> = ({
     }
   ];
 
+  const handleDeleteConfirmation = (job: BatchJob, event?: React.MouseEvent) => {
+    // Evitar que el evento se propague y active el onRowClick
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    
+    showConfirmation({
+      title: 'Confirmar eliminación',
+      message: '¿Estás seguro de que deseas eliminar este trabajo? Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      severity: 'error',
+      onConfirm: () => {
+        onJobAction(job.id, 'delete');
+        hideConfirmation();
+      }
+    });
+  };
+
+  const handleActionClick = (action: () => void, event?: React.MouseEvent) => {
+    // Evitar que cualquier acción active el onRowClick
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    action();
+  };
+
   const getTableActions = (job: BatchJob) => {
     const actions = [
       {
         label: 'Ver',
         icon: Eye,
         variant: 'outline' as const,
-        onClick: () => onJobSelect(job)
+        onClick: (event?: React.MouseEvent) => handleActionClick(() => onJobSelect(job), event)
       }
     ];
 
@@ -133,7 +166,7 @@ const BatchJobsTable: React.FC<BatchJobsTableProps> = ({
         label: 'Iniciar',
         icon: Play,
         variant: 'outline' as const,
-        onClick: () => onJobAction(job.id, 'start')
+        onClick: (event?: React.MouseEvent) => handleActionClick(() => onJobAction(job.id, 'start'), event)
       });
     }
 
@@ -142,7 +175,7 @@ const BatchJobsTable: React.FC<BatchJobsTableProps> = ({
         label: 'Pausar',
         icon: Pause,
         variant: 'outline' as const,
-        onClick: () => onJobAction(job.id, 'pause')
+        onClick: (event?: React.MouseEvent) => handleActionClick(() => onJobAction(job.id, 'pause'), event)
       });
     }
 
@@ -150,8 +183,8 @@ const BatchJobsTable: React.FC<BatchJobsTableProps> = ({
       actions.push({
         label: 'Reanudar',
         icon: Play,
-          variant: 'outline' as const,
-        onClick: () => onJobAction(job.id, 'resume')
+        variant: 'outline' as const,
+        onClick: (event?: React.MouseEvent) => handleActionClick(() => onJobAction(job.id, 'resume'), event)
       });
     }
 
@@ -159,8 +192,8 @@ const BatchJobsTable: React.FC<BatchJobsTableProps> = ({
       actions.push({
         label: 'Reintentar',
         icon: RotateCcw,
-           variant: 'outline' as const,
-        onClick: () => onJobAction(job.id, 'retry')
+        variant: 'outline' as const,
+        onClick: (event?: React.MouseEvent) => handleActionClick(() => onJobAction(job.id, 'retry'), event)
       });
     }
 
@@ -168,12 +201,8 @@ const BatchJobsTable: React.FC<BatchJobsTableProps> = ({
       actions.push({
         label: 'Eliminar',
         icon: Trash2,
-           variant: 'outline' as const,
-        onClick: () => {
-          if (confirm(`¿Estás seguro de que quieres eliminar el trabajo "${job.name}"?`)) {
-            onJobAction(job.id, 'delete');
-          }
-        }
+        variant: 'outline' as const,
+        onClick: (event?: React.MouseEvent) => handleDeleteConfirmation(job, event)
       });
     }
 
@@ -181,19 +210,35 @@ const BatchJobsTable: React.FC<BatchJobsTableProps> = ({
   };
 
   return (
-    <DataTable
-      data={jobs}
-      columns={columns}
-      actions={getTableActions}
-      searchable={true}
-      sortable={true}
-      pagination={true}
-      pageSize={10}
-      selectable={true}
-      onRowSelect={onRowSelect}
-      onRowClick={onJobSelect}
-      emptyMessage="No hay trabajos de anonimización configurados"
-    />
+    <>
+      <DataTable
+        data={jobs}
+        columns={columns}
+        actions={(job: BatchJob) => getTableActions(job).map(action => ({
+          ...action,
+          onClick: () => action.onClick()
+        }))}
+        searchable={true}
+        sortable={true}
+        pagination={true}
+        pageSize={10}
+        selectable={true}
+        onRowSelect={onRowSelect}
+        onRowClick={onJobSelect}
+        emptyMessage="No hay trabajos de anonimización configurados"
+      />
+      
+      <ConfirmationDialog
+        isOpen={confirmation.isOpen}
+        title={confirmation.title}
+        message={confirmation.message}
+        confirmText={confirmation.confirmText}
+        cancelText={confirmation.cancelText}
+        severity={confirmation.severity}
+        onConfirm={handleConfirm}
+        onCancel={hideConfirmation}
+      />
+    </>
   );
 };
 
