@@ -149,7 +149,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                   required
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Ej: API Clientes - Anonimización RUT"
                 />
               </div>
@@ -162,7 +162,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                   required
                   value={formData.technique}
                   onChange={(e) => setFormData(prev => ({ ...prev, technique: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {techniques.map(tech => (
                     <option key={tech.value} value={tech.value}>{tech.label}</option>
@@ -178,7 +178,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 rows={3}
                 placeholder="Descripción del procesamiento en tiempo real..."
               />
@@ -220,7 +220,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                   required
                   value={inputSource.name}
                   onChange={(e) => setInputSource(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Nombre descriptivo"
                 />
               </div>
@@ -238,7 +238,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                       ...prev,
                       configuration: { ...prev.configuration, endpoint: e.target.value }
                     }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="https://api.ejemplo.com/datos"
                   />
                 </div>
@@ -258,7 +258,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                         ...prev,
                         configuration: { ...prev.configuration, connectionString: e.target.value }
                       }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Server=localhost;Database=MyDB;"
                     />
                   </div>
@@ -274,7 +274,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                         ...prev,
                         configuration: { ...prev.configuration, tableName: e.target.value }
                       }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="nombre_tabla"
                     />
                   </div>
@@ -352,7 +352,10 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                         type="checkbox"
                         checked={field.isSensitive}
                         onChange={(e) => updateSchemaField(index, { isSensitive: e.target.checked })}
-                        className="mr-1 "
+                        className="mr-1"
+                        style={{
+                          backgroundColor: 'red'
+                        }}
                       />
                       Sensible
                     </label>
@@ -416,7 +419,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                   required
                   value={outputTarget.name}
                   onChange={(e) => setOutputTarget(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Nombre descriptivo"
                 />
               </div>
@@ -435,7 +438,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                         ...prev,
                         configuration: { ...prev.configuration, connectionString: e.target.value }
                       }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Server=localhost;Database=OutputDB;"
                     />
                   </div>
@@ -451,7 +454,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                         ...prev,
                         configuration: { ...prev.configuration, tableName: e.target.value }
                       }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="tabla_anonimizada"
                     />
                   </div>
@@ -473,7 +476,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
                   type="text"
                   value={parameters.saltKey || ''}
                   onChange={(e) => setParameters(prev => ({ ...prev, saltKey: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="clave_secreta_123"
                 />
               </div>
