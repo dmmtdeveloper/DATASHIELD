@@ -205,7 +205,7 @@ const RealTimeProcessor: React.FC<RealTimeProcessorProps> = ({ session, onSessio
             </label>
             <select
               value={session.technique}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full text-gray-700 px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {techniques.map(technique => (
                 <option key={technique.value} value={technique.value}>
@@ -229,7 +229,7 @@ const RealTimeProcessor: React.FC<RealTimeProcessorProps> = ({ session, onSessio
                   <input
                     type="text"
                     value={value}
-                    className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 px-2 py-1 text-sm border text-gray-700 border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               ))}
@@ -261,7 +261,7 @@ const RealTimeProcessor: React.FC<RealTimeProcessorProps> = ({ session, onSessio
                   <select
                     value={rule.fieldName}
                     onChange={(e) => updateProcessingRule(rule.id, { fieldName: e.target.value })}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-2 py-1 text-gray-700 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Seleccionar campo</option>
                     {session.inputSource.schema.map(field => (
@@ -280,7 +280,7 @@ const RealTimeProcessor: React.FC<RealTimeProcessorProps> = ({ session, onSessio
                     type="text"
                     value={rule.condition}
                     onChange={(e) => updateProcessingRule(rule.id, { condition: e.target.value })}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full text-gray-700 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                     placeholder="ej: length > 10"
                   />
                 </div>
@@ -292,7 +292,7 @@ const RealTimeProcessor: React.FC<RealTimeProcessorProps> = ({ session, onSessio
                   <select
                     value={rule.action}
                     onChange={(e) => updateProcessingRule(rule.id, { action: e.target.value as any })}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full text-gray-700 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   >
                     {ruleActions.map(action => (
                       <option key={action.value} value={action.value}>
@@ -320,7 +320,7 @@ const RealTimeProcessor: React.FC<RealTimeProcessorProps> = ({ session, onSessio
                   <select
                     value={rule.technique || ''}
                     onChange={(e) => updateProcessingRule(rule.id, { technique: e.target.value })}
-                    className="w-full md:w-1/2 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full md:w-1/2 text-gray-700 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Usar técnica principal</option>
                     {techniques.map(technique => (
@@ -349,7 +349,7 @@ const RealTimeProcessor: React.FC<RealTimeProcessorProps> = ({ session, onSessio
               <input
                 type="number"
                 defaultValue={100}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             
@@ -360,7 +360,7 @@ const RealTimeProcessor: React.FC<RealTimeProcessorProps> = ({ session, onSessio
               <input
                 type="number"
                 defaultValue={1000}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             
@@ -371,7 +371,7 @@ const RealTimeProcessor: React.FC<RealTimeProcessorProps> = ({ session, onSessio
               <input
                 type="number"
                 defaultValue={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>

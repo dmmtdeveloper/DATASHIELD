@@ -127,7 +127,7 @@ const DataInputSelector: React.FC<DataInputSelectorProps> = ({ session, onSessio
                 <input
                   type="text"
                   value={session.inputSource.name}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Nombre descriptivo"
                 />
               </div>
@@ -138,7 +138,7 @@ const DataInputSelector: React.FC<DataInputSelectorProps> = ({ session, onSessio
                 </label>
                 <select
                   value={session.inputSource.type}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {sourceTypes.map(type => (
                     <option key={type.value} value={type.value}>{type.label}</option>
@@ -155,18 +155,18 @@ const DataInputSelector: React.FC<DataInputSelectorProps> = ({ session, onSessio
                     <input
                       type="url"
                       value={session.inputSource.configuration.endpoint || ''}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://api.ejemplo.com/datos"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block  text-sm font-medium text-gray-700 mb-1">
                       Intervalo de Consulta (ms)
                     </label>
                     <input
                       type="number"
                       value={session.inputSource.configuration.pollInterval || 5000}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="5000"
                     />
                   </div>
@@ -252,7 +252,7 @@ const DataInputSelector: React.FC<DataInputSelectorProps> = ({ session, onSessio
                     type="text"
                     value={field.fieldName}
                     onChange={(e) => handleFieldUpdate(index, { fieldName: e.target.value })}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-2 py-1 text-gray-700 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                     placeholder="nombre_campo"
                   />
                 </div>
@@ -264,7 +264,7 @@ const DataInputSelector: React.FC<DataInputSelectorProps> = ({ session, onSessio
                   <select
                     value={field.dataType}
                     onChange={(e) => handleFieldUpdate(index, { dataType: e.target.value as any })}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-2 py-1 text-sm border text-gray-700 border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   >
                     {dataTypes.map(type => (
                       <option key={type.value} value={type.value}>{type.label}</option>
@@ -314,7 +314,7 @@ const DataInputSelector: React.FC<DataInputSelectorProps> = ({ session, onSessio
                   <select
                     value={field.anonymizationTechnique || ''}
                     onChange={(e) => handleFieldUpdate(index, { anonymizationTechnique: e.target.value })}
-                    className="w-full md:w-1/3 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full md:w-1/3 px-2 py-1 text-sm border text-gray-700 border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Seleccionar técnica</option>
                     <option value="hashing">Hashing</option>

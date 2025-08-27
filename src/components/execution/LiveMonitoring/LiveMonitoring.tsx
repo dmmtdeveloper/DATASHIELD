@@ -133,7 +133,7 @@ const LiveMonitoring: React.FC<LiveMonitoringProps> = ({ session }) => {
           <select
             value={selectedTimeRange}
             onChange={(e) => setSelectedTimeRange(e.target.value as any)}
-            className="px-3 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-1 text-sm border text-gray-700 border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="1h">Última hora</option>
             <option value="6h">Últimas 6 horas</option>

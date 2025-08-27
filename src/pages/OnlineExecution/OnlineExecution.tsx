@@ -4,6 +4,7 @@ import DataInputSelector from '../../components/execution/DataInputSelector/Data
 import RealTimeProcessor from '../../components/execution/RealTimeProcessor/RealTimeProcessor';
 import LiveMonitoring from '../../components/execution/LiveMonitoring/LiveMonitoring';
 import type { OnlineSession } from '../../types/online.types';
+import NewSessionModal from '../../components/execution/OnlineExecution/NewSessionModal';
 
 const OnlineExecution: React.FC = () => {
   const [activeSession, setActiveSession] = useState<OnlineSession | null>(null);
@@ -166,7 +167,7 @@ const OnlineExecution: React.FC = () => {
 
       {/* Sessions Overview */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold mb-4">Sesiones Activas</h2>
+        <h2 className="text-xl text-gray-700 font-semibold mb-4">Sesiones Activas</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {sessions.map((session) => (
             <div 
@@ -282,8 +283,20 @@ const OnlineExecution: React.FC = () => {
           </div>
         </div>
       )}
+  // Agregar al final del componente, antes del cierre del div principal:
+        {/* Modal de Nueva Sesión */}
+   <NewSessionModal 
+          isOpen={showConfig}
+          onClose={() => setShowConfig(false)}
+          onCreateSession={(newSession) => {
+            setSessions(prev => [...prev, newSession]);
+            setActiveSession(newSession);
+            setShowConfig(false);
+          }}
+        />
     </div>
   );
 };
+
 
 export default OnlineExecution;
