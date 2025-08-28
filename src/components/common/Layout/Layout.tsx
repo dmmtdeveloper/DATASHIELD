@@ -121,12 +121,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           ) : (
             <button
-              onClick={handleLogout}
-              className="w-full p-2  text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-              title="Cerrar Sesión"
+            onClick={handleLogout}
+            className="w-full p-2  text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+            title="Cerrar Sesión"
             >
               <LogOut size={20} className="mx-auto" />
             </button>
+            
+          )}
+
+          {sidebarOpen && (
+            <small className='text-gray-500'>Version 1.0.0 / 28-08-2025 / PM</small> 
           )}
         </div>
       </div>
