@@ -3,36 +3,35 @@ import { Save, RotateCcw, User, Palette, Bell, Monitor } from 'lucide-react';
 import type { UserPreferences as UserPreferencesType } from '../../../types/settings.types';
 import { SettingsService } from '../../../services/settings/SettingsService';
 
-const UserPreferences: React.FC = () => {
+interface UserPreferencesProps {
+  onSettingsChange?: () => void;
+}
+
+const UserPreferences: React.FC<UserPreferencesProps> = ({ onSettingsChange }) => {
   const [preferences, setPreferences] = useState<UserPreferencesType>({
     theme: 'light',
     language: 'es',
     timezone: 'America/Santiago',
-    dateFormat: 'DD/MM/YYYY',
-    timeFormat: '24h',
-    itemsPerPage: 25,
-    enableNotifications: true,
-    emailNotifications: true,
-    pushNotifications: false,
-    soundEnabled: true,
-    autoSave: true,
-    compactView: false,
-    showTooltips: true,
-    defaultDashboard: 'overview',
-    favoriteModules: []
+    notifications: {
+      email: true,
+      browser: true,
+      desktop: false
+    },
+    dashboard: {
+      defaultView: 'overview',
+      refreshInterval: 30,
+      showMetrics: true,
+      compactMode: false
+    },
+    accessibility: {
+      highContrast: false,
+      largeText: false,
+      reducedMotion: false,
+      screenReader: false
+    }
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
-
-  const modules = [
-    { id: 'discovery', name: 'Descubrimiento de Datos' },
-    { id: 'universe', name: 'Administración de Universos' },
-    { id: 'catalog', name: 'Catálogo de Atributos' },
-    { id: 'batch', name: 'Ejecución Batch' },
-    { id: 'online', name: 'Ejecución Online' },
-    { id: 'audit', name: 'Auditoría' },
-    { id: 'monitoring', name: 'Monitoreo' }
-  ];
 
   useEffect(() => {
     loadPreferences();
@@ -71,15 +70,40 @@ const UserPreferences: React.FC = () => {
 
   const handleChange = (field: keyof UserPreferencesType, value: any) => {
     setPreferences(prev => ({ ...prev, [field]: value }));
+    onSettingsChange?.();
   };
 
-  const toggleFavoriteModule = (moduleId: string) => {
+  const handleNotificationChange = (field: keyof UserPreferencesType['notifications'], value: boolean) => {
     setPreferences(prev => ({
       ...prev,
-      favoriteModules: prev.favoriteModules.includes(moduleId)
-        ? prev.favoriteModules.filter(id => id !== moduleId)
-        : [...prev.favoriteModules, moduleId]
+      notifications: {
+        ...prev.notifications,
+        [field]: value
+      }
     }));
+    onSettingsChange?.();
+  };
+
+  const handleDashboardChange = (field: keyof UserPreferencesType['dashboard'], value: any) => {
+    setPreferences(prev => ({
+      ...prev,
+      dashboard: {
+        ...prev.dashboard,
+        [field]: value
+      }
+    }));
+    onSettingsChange?.();
+  };
+
+  const handleAccessibilityChange = (field: keyof UserPreferencesType['accessibility'], value: boolean) => {
+    setPreferences(prev => ({
+      ...prev,
+      accessibility: {
+        ...prev.accessibility,
+        [field]: value
+      }
+    }));
+    onSettingsChange?.();
   };
 
   return (
@@ -136,52 +160,34 @@ const UserPreferences: React.FC = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Elementos por página
+              Idioma
             </label>
             <select
-              value={preferences.itemsPerPage}
-              onChange={(e) => handleChange('itemsPerPage', parseInt(e.target.value))}
+              value={preferences.language}
+              onChange={(e) => handleChange('language', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
+              <option value="es">Español</option>
+              <option value="en">English</option>
+              <option value="pt">Português</option>
             </select>
           </div>
         </div>
-        
-        <div className="mt-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium text-gray-700">Vista Compacta</label>
-              <p className="text-xs text-gray-500">Reduce el espaciado entre elementos</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={preferences.compactView}
-                onChange={(e) => handleChange('compactView', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+        <div className="mt-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Zona Horaria
             </label>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium text-gray-700">Mostrar Tooltips</label>
-              <p className="text-xs text-gray-500">Ayuda contextual al pasar el mouse</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={preferences.showTooltips}
-                onChange={(e) => handleChange('showTooltips', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
+            <select
+              value={preferences.timezone}
+              onChange={(e) => handleChange('timezone', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="America/Santiago">Santiago (UTC-3)</option>
+              <option value="America/Buenos_Aires">Buenos Aires (UTC-3)</option>
+              <option value="America/Sao_Paulo">São Paulo (UTC-3)</option>
+              <option value="UTC">UTC</option>
+            </select>
           </div>
         </div>
       </div>
@@ -196,80 +202,69 @@ const UserPreferences: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Habilitar Notificaciones</label>
-              <p className="text-xs text-gray-500">Recibe notificaciones del sistema</p>
+              <label className="text-sm font-medium text-gray-700">Notificaciones por Email</label>
+              <p className="text-xs text-gray-500">Recibe notificaciones por correo electrónico</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={preferences.enableNotifications}
-                onChange={(e) => handleChange('enableNotifications', e.target.checked)}
+                checked={preferences.notifications.email}
+                onChange={(e) => handleNotificationChange('email', e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
           
-          {preferences.enableNotifications && (
-            <>
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Notificaciones por Email</label>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={preferences.emailNotifications}
-                    onChange={(e) => handleChange('emailNotifications', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Notificaciones Push</label>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={preferences.pushNotifications}
-                    onChange={(e) => handleChange('pushNotifications', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Sonidos</label>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={preferences.soundEnabled}
-                    onChange={(e) => handleChange('soundEnabled', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-            </>
-          )}
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Notificaciones del Navegador</label>
+              <p className="text-xs text-gray-500">Notificaciones en tiempo real</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.notifications.browser}
+                onChange={(e) => handleNotificationChange('browser', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Notificaciones de Escritorio</label>
+              <p className="text-xs text-gray-500">Notificaciones del sistema operativo</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.notifications.desktop}
+                onChange={(e) => handleNotificationChange('desktop', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
         </div>
       </div>
 
-      {/* Behavior Settings */}
+      {/* Dashboard Settings */}
       <div className="card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Monitor className="w-5 h-5 text-blue-600" />
-          <h4 className="text-md font-semibold text-gray-800">Comportamiento</h4>
+          <h4 className="text-md font-semibold text-gray-800">Dashboard</h4>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Dashboard por Defecto
+              Vista por Defecto
             </label>
             <select
-              value={preferences.defaultDashboard}
-              onChange={(e) => handleChange('defaultDashboard', e.target.value)}
+              value={preferences.dashboard.defaultView}
+              onChange={(e) => handleDashboardChange('defaultView', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="overview">Resumen General</option>
@@ -278,16 +273,48 @@ const UserPreferences: React.FC = () => {
               <option value="compliance">Estado de Cumplimiento</option>
             </select>
           </div>
-          <div className="flex items-center">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Intervalo de Actualización (segundos)
+            </label>
+            <input
+              type="number"
+              min="10"
+              max="300"
+              value={preferences.dashboard.refreshInterval}
+              onChange={(e) => handleDashboardChange('refreshInterval', parseInt(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+        
+        <div className="mt-6 space-y-4">
+          <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Guardado Automático</label>
-              <p className="text-xs text-gray-500">Guarda cambios automáticamente</p>
+              <label className="text-sm font-medium text-gray-700">Mostrar Métricas</label>
+              <p className="text-xs text-gray-500">Visualizar métricas en el dashboard</p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer ml-auto">
+            <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={preferences.autoSave}
-                onChange={(e) => handleChange('autoSave', e.target.checked)}
+                checked={preferences.dashboard.showMetrics}
+                onChange={(e) => handleDashboardChange('showMetrics', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Modo Compacto</label>
+              <p className="text-xs text-gray-500">Reduce el espaciado entre elementos</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.dashboard.compactMode}
+                onChange={(e) => handleDashboardChange('compactMode', e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -296,28 +323,77 @@ const UserPreferences: React.FC = () => {
         </div>
       </div>
 
-      {/* Favorite Modules */}
+      {/* Accessibility Settings */}
       <div className="card p-6">
         <div className="flex items-center gap-2 mb-4">
           <User className="w-5 h-5 text-blue-600" />
-          <h4 className="text-md font-semibold text-gray-800">Módulos Favoritos</h4>
+          <h4 className="text-md font-semibold text-gray-800">Accesibilidad</h4>
         </div>
-        <p className="text-sm text-gray-600 mb-4">Selecciona los módulos que usas con más frecuencia para acceso rápido</p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {modules.map((module) => (
-            <div key={module.id} className="flex items-center">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={preferences.favoriteModules.includes(module.id)}
-                  onChange={() => toggleFavoriteModule(module.id)}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="ml-2 text-sm text-gray-700">{module.name}</span>
-              </label>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Alto Contraste</label>
+              <p className="text-xs text-gray-500">Mejora la visibilidad del texto</p>
             </div>
-          ))}
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.accessibility.highContrast}
+                onChange={(e) => handleAccessibilityChange('highContrast', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Texto Grande</label>
+              <p className="text-xs text-gray-500">Aumenta el tamaño del texto</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.accessibility.largeText}
+                onChange={(e) => handleAccessibilityChange('largeText', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Reducir Movimiento</label>
+              <p className="text-xs text-gray-500">Disminuye animaciones y transiciones</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.accessibility.reducedMotion}
+                onChange={(e) => handleAccessibilityChange('reducedMotion', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Lector de Pantalla</label>
+              <p className="text-xs text-gray-500">Optimiza para lectores de pantalla</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.accessibility.screenReader}
+                onChange={(e) => handleAccessibilityChange('screenReader', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
         </div>
       </div>
     </div>

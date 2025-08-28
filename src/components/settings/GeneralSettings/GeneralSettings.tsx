@@ -3,7 +3,11 @@ import { Save, RotateCcw, Globe, Clock, Database } from 'lucide-react';
 import type { GeneralSettings as GeneralSettingsType } from '../../../types/settings.types';
 import { SettingsService } from '../../../services/settings/SettingsService';
 
-const GeneralSettings: React.FC = () => {
+interface GeneralSettingsProps {
+  onSettingsChange?: () => void;
+}
+
+const GeneralSettings: React.FC<GeneralSettingsProps> = ({ onSettingsChange }) => {
   const [settings, setSettings] = useState<GeneralSettingsType>({
     applicationName: 'Zurich Anonimización',
     language: 'es',
@@ -58,6 +62,7 @@ const GeneralSettings: React.FC = () => {
 
   const handleChange = (field: keyof GeneralSettingsType, value: any) => {
     setSettings(prev => ({ ...prev, [field]: value }));
+    onSettingsChange?.();
   };
 
   return (

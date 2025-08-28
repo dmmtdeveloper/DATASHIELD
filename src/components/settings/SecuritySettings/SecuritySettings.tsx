@@ -3,26 +3,38 @@ import { Save, RotateCcw, Shield, Lock, Key, AlertTriangle } from 'lucide-react'
 import type { SecuritySettings as SecuritySettingsType } from '../../../types/settings.types';
 import { SettingsService } from '../../../services/settings/SettingsService';
 
-const SecuritySettings: React.FC = () => {
+interface SecuritySettingsProps {
+  onSettingsChange?: () => void;
+}
+
+const SecuritySettings: React.FC<SecuritySettingsProps> = ({ onSettingsChange }) => {
   const [settings, setSettings] = useState<SecuritySettingsType>({
-    passwordMinLength: 8,
-    passwordRequireUppercase: true,
-    passwordRequireLowercase: true,
-    passwordRequireNumbers: true,
-    passwordRequireSpecialChars: true,
-    passwordExpirationDays: 90,
-    maxLoginAttempts: 5,
-    lockoutDurationMinutes: 30,
-    sessionTimeoutMinutes: 60,
-    enableTwoFactor: false,
-    enableSSO: false,
-    encryptionAlgorithm: 'AES-256',
-    hashingAlgorithm: 'SHA-256',
-    enableAuditLog: true,
-    logRetentionDays: 365,
-    enableIPWhitelist: false,
-    allowedIPs: [],
-    enableRoleBasedAccess: true
+    passwordPolicy: {
+      minLength: 8,
+      requireUppercase: true,
+      requireLowercase: true,
+      requireNumbers: true,
+      requireSpecialChars: true,
+      expirationDays: 90
+    },
+    sessionSecurity: {
+      maxSessionDuration: 480,
+      idleTimeout: 30,
+      maxConcurrentSessions: 3,
+      requireReauthentication: true
+    },
+    auditSettings: {
+      enableAuditLogging: true,
+      logLevel: 'detailed',
+      retentionDays: 365,
+      enableRealTimeAlerts: true
+    },
+    accessControl: {
+      enableTwoFactor: false,
+      allowedIpRanges: [],
+      blockSuspiciousActivity: true,
+      maxFailedAttempts: 3
+    }
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -65,23 +77,62 @@ const SecuritySettings: React.FC = () => {
 
   const handleChange = (field: keyof SecuritySettingsType, value: any) => {
     setSettings(prev => ({ ...prev, [field]: value }));
+    onSettingsChange?.();
+  };
+
+  const handlePasswordPolicyChange = (field: keyof SecuritySettingsType['passwordPolicy'], value: any) => {
+    setSettings(prev => ({
+      ...prev,
+      passwordPolicy: {
+        ...prev.passwordPolicy,
+        [field]: value
+      }
+    }));
+    onSettingsChange?.();
+  };
+
+  const handleSessionSecurityChange = (field: keyof SecuritySettingsType['sessionSecurity'], value: any) => {
+    setSettings(prev => ({
+      ...prev,
+      sessionSecurity: {
+        ...prev.sessionSecurity,
+        [field]: value
+      }
+    }));
+    onSettingsChange?.();
+  };
+
+  const handleAuditSettingsChange = (field: keyof SecuritySettingsType['auditSettings'], value: any) => {
+    setSettings(prev => ({
+      ...prev,
+      auditSettings: {
+        ...prev.auditSettings,
+        [field]: value
+      }
+    }));
+    onSettingsChange?.();
+  };
+
+  const handleAccessControlChange = (field: keyof SecuritySettingsType['accessControl'], value: any) => {
+    setSettings(prev => ({
+      ...prev,
+      accessControl: {
+        ...prev.accessControl,
+        [field]: value
+      }
+    }));
+    onSettingsChange?.();
   };
 
   const addIP = () => {
-    if (newIP && !settings.allowedIPs.includes(newIP)) {
-      setSettings(prev => ({
-        ...prev,
-        allowedIPs: [...prev.allowedIPs, newIP]
-      }));
+    if (newIP && !settings.accessControl.allowedIpRanges.includes(newIP)) {
+      handleAccessControlChange('allowedIpRanges', [...settings.accessControl.allowedIpRanges, newIP]);
       setNewIP('');
     }
   };
 
   const removeIP = (ip: string) => {
-    setSettings(prev => ({
-      ...prev,
-      allowedIPs: prev.allowedIPs.filter(allowedIP => allowedIP !== ip)
-    }));
+    handleAccessControlChange('allowedIpRanges', settings.accessControl.allowedIpRanges.filter(allowedIP => allowedIP !== ip));
   };
 
   return (
@@ -130,8 +181,8 @@ const SecuritySettings: React.FC = () => {
               type="number"
               min="6"
               max="32"
-              value={settings.passwordMinLength}
-              onChange={(e) => handleChange('passwordMinLength', parseInt(e.target.value))}
+              value={settings.passwordPolicy.minLength}
+              onChange={(e) => handlePasswordPolicyChange('minLength', parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -143,8 +194,8 @@ const SecuritySettings: React.FC = () => {
               type="number"
               min="0"
               max="365"
-              value={settings.passwordExpirationDays}
-              onChange={(e) => handleChange('passwordExpirationDays', parseInt(e.target.value))}
+              value={settings.passwordPolicy.expirationDays}
+              onChange={(e) => handlePasswordPolicyChange('expirationDays', parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <p className="text-xs text-gray-500 mt-1">0 = sin expiración</p>
@@ -157,8 +208,8 @@ const SecuritySettings: React.FC = () => {
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.passwordRequireUppercase}
-                onChange={(e) => handleChange('passwordRequireUppercase', e.target.checked)}
+                checked={settings.passwordPolicy.requireUppercase}
+                onChange={(e) => handlePasswordPolicyChange('requireUppercase', e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -170,8 +221,8 @@ const SecuritySettings: React.FC = () => {
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.passwordRequireLowercase}
-                onChange={(e) => handleChange('passwordRequireLowercase', e.target.checked)}
+                checked={settings.passwordPolicy.requireLowercase}
+                onChange={(e) => handlePasswordPolicyChange('requireLowercase', e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -183,8 +234,8 @@ const SecuritySettings: React.FC = () => {
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.passwordRequireNumbers}
-                onChange={(e) => handleChange('passwordRequireNumbers', e.target.checked)}
+                checked={settings.passwordPolicy.requireNumbers}
+                onChange={(e) => handlePasswordPolicyChange('requireNumbers', e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -196,8 +247,8 @@ const SecuritySettings: React.FC = () => {
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.passwordRequireSpecialChars}
-                onChange={(e) => handleChange('passwordRequireSpecialChars', e.target.checked)}
+                checked={settings.passwordPolicy.requireSpecialChars}
+                onChange={(e) => handlePasswordPolicyChange('requireSpecialChars', e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
