@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  CheckCircle,
-  Clock,
-} from 'lucide-react';
-import { SystemMetrics, ActivitySummary } from '../../components/monitoring/Dashboard';
+import { SystemMetrics, ActivitySummary, ComplianceStatus, QuickActions } from '../../components/monitoring/Dashboard';
 
 const Dashboard: React.FC = () => {
   return (
@@ -16,31 +12,14 @@ const Dashboard: React.FC = () => {
         <p className="text-gray-600">Monitoreo y gestión del cumplimiento normativo</p>
       </div>
       
-      {/* Alertas de Cumplimiento */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <CheckCircle className="text-green-600 mr-3" size={24} />
-            <div>
-              <h3 className="font-semibold text-green-800">Cumplimiento Normativo</h3>
-              <p className="text-green-700 text-sm">Ley 19.628 y 21.719: Sistema operativo y conforme</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <Clock className="text-blue-600 mr-3" size={24} />
-            <div>
-              <h3 className="font-semibold text-blue-800">Próxima Auditoría</h3>
-              <p className="text-blue-700 text-sm">Programada para el 15 de Febrero 2024</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Componente ComplianceStatus */}
+      <ComplianceStatus />
       
-      {/* Métricas del Sistema - Componente SystemMetrics */}
+      {/* Métricas del Sistema */}
       <SystemMetrics />
+      
+      {/* Acciones Rápidas */}
+      <QuickActions />
       
       {/* Resumen de Estados y Actividades */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -63,7 +42,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
         
-        {/* Componente ActivitySummary reemplaza la sección manual */}
+        {/* Componente ActivitySummary */}
         <ActivitySummary />
       </div>
     </div>
