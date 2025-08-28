@@ -1,29 +1,11 @@
 import React from 'react';
 import {
-  Shield,
   CheckCircle,
   Clock,
 } from 'lucide-react';
-import { SystemMetrics } from '../../components/monitoring/Dashboard';
+import { SystemMetrics, ActivitySummary } from '../../components/monitoring/Dashboard';
 
 const Dashboard: React.FC = () => {
-  const recentActivities = [
-    { action: 'Ejecución Batch completada', time: '10:30 AM', status: 'success' },
-    { action: 'Nuevo universo creado', time: '09:15 AM', status: 'info' },
-    { action: 'Auditoría programada', time: '08:45 AM', status: 'warning' },
-    { action: 'Datos sensibles detectados', time: '08:00 AM', status: 'error' }
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success': return 'bg-green-100 text-green-800';
-      case 'info': return 'bg-blue-100 text-blue-800';
-      case 'warning': return 'bg-yellow-100 text-yellow-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -81,21 +63,8 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
         
-        {/* Actividades Recientes */}
-        <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Actividades Recientes</h3>
-          <div className="space-y-3">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-2">
-                <span className="text-gray-700 text-sm">{activity.action}</span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-gray-500 text-xs">{activity.time}</span>
-                  <div className={`w-2 h-2 rounded-full ${getStatusColor(activity.status).replace('text-', 'bg-').split(' ')[0]}`}></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Componente ActivitySummary reemplaza la sección manual */}
+        <ActivitySummary />
       </div>
     </div>
   );
