@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, RotateCcw, Shield, Lock, Key, AlertTriangle } from 'lucide-react';
 import type { SecuritySettings as SecuritySettingsType } from '../../../types/settings.types';
-import { SettingsService } from '../../../services/settings/SettingsService';
+import { settingsService } from '../../../services/settings/SettingsService';
 
 interface SecuritySettingsProps {
   onSettingsChange?: () => void;
@@ -46,7 +46,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({ onSettingsChange })
 
   const loadSettings = async () => {
     try {
-      const currentSettings = await SettingsService.getSettings();
+      const currentSettings = await settingsService.getSettings();
       setSettings(currentSettings.security);
     } catch (error) {
       console.error('Error loading security settings:', error);
@@ -56,7 +56,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({ onSettingsChange })
   const handleSave = async () => {
     setLoading(true);
     try {
-      await SettingsService.updateSettings({ security: settings });
+      await settingsService.updateSettings({ security: settings });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -68,7 +68,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({ onSettingsChange })
 
   const handleReset = async () => {
     try {
-      const defaultSettings = await SettingsService.getDefaultSettings();
+      const defaultSettings = await settingsService.getDefaultSettings();
       setSettings(defaultSettings.security);
     } catch (error) {
       console.error('Error resetting security settings:', error);

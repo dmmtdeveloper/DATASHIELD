@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, RotateCcw, Bell, Mail, MessageSquare, AlertTriangle, Info, Volume2, VolumeX } from 'lucide-react';
 import type { NotificationSettings as NotificationSettingsType } from '../../../types/settings.types';
-import { SettingsService } from '../../../services/settings/SettingsService';
+import { settingsService } from '../../../services/settings/SettingsService';
 
 interface NotificationSettingsProps {
   onSave?: (settings: NotificationSettingsType) => void;
@@ -66,9 +66,9 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onSave }) =
 
   const loadSettings = async () => {
     try {
-      const systemSettings = await SettingsService.loadSettings();
-      if (systemSettings.notification) {
-        setSettings(systemSettings.notification);
+      const systemSettings = await settingsService.loadSettings();
+      if (systemSettings.notifications) {
+        setSettings(systemSettings.notifications);
       }
     } catch (error) {
       console.error('Error loading notification settings:', error);
@@ -78,7 +78,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onSave }) =
   const handleSave = async () => {
     setLoading(true);
     try {
-      await SettingsService.updateSettings({ notification: settings });
+      await settingsService.updateSettings({ notifications: settings });
       setSaved(true);
       onSave?.(settings);
       setTimeout(() => setSaved(false), 2000);
@@ -91,9 +91,9 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onSave }) =
 
   const handleReset = async () => {
     try {
-      const defaultSettings = await SettingsService.getDefaultSettings();
-      if (defaultSettings.notification) {
-        setSettings(defaultSettings.notification);
+      const defaultSettings = await settingsService.getDefaultSettings();
+      if (defaultSettings.notifications) {
+        setSettings(defaultSettings.notifications);
       }
     } catch (error) {
       console.error('Error resetting notification settings:', error);

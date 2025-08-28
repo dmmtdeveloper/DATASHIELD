@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, RotateCcw, User, Palette, Bell, Monitor } from 'lucide-react';
 import type { UserPreferences as UserPreferencesType } from '../../../types/settings.types';
-import { SettingsService } from '../../../services/settings/SettingsService';
+import { settingsService } from '../../../services/settings/SettingsService';
 
 interface UserPreferencesProps {
   onSettingsChange?: () => void;
@@ -39,7 +39,7 @@ const UserPreferences: React.FC<UserPreferencesProps> = ({ onSettingsChange }) =
 
   const loadPreferences = async () => {
     try {
-      const currentSettings = await SettingsService.getSettings();
+      const currentSettings = await settingsService.getSettings();
       setPreferences(currentSettings.userPreferences);
     } catch (error) {
       console.error('Error loading user preferences:', error);
@@ -49,7 +49,7 @@ const UserPreferences: React.FC<UserPreferencesProps> = ({ onSettingsChange }) =
   const handleSave = async () => {
     setLoading(true);
     try {
-      await SettingsService.updateSettings({ userPreferences: preferences });
+      await settingsService.updateSettings({ userPreferences: preferences });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -61,7 +61,7 @@ const UserPreferences: React.FC<UserPreferencesProps> = ({ onSettingsChange }) =
 
   const handleReset = async () => {
     try {
-      const defaultSettings = await SettingsService.getDefaultSettings();
+      const defaultSettings = await settingsService.getDefaultSettings();
       setPreferences(defaultSettings.userPreferences);
     } catch (error) {
       console.error('Error resetting user preferences:', error);
