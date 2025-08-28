@@ -50,6 +50,10 @@ export type AuditModule =
 export type AuditSeverity = 'low' | 'medium' | 'high' | 'critical';
 
 export interface AuditFilters {
+    endDate?:Date;
+    startDate?:Date;
+    
+    
   dateFrom?: Date;
   dateTo?: Date;
   userId?: string;
