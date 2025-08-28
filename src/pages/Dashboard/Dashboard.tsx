@@ -1,51 +1,12 @@
 import React from 'react';
 import {
   Shield,
-  BarChart3,
-  Eye,
-  TrendingUp,
   CheckCircle,
   Clock,
 } from 'lucide-react';
+import { SystemMetrics } from '../../components/monitoring/Dashboard';
 
 const Dashboard: React.FC = () => {
-  const kpis = [
-    {
-      title: 'Cobertura de Detección',
-      value: '92%',
-      target: '≥90%',
-      icon: Eye,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      progress: 92
-    },
-    {
-      title: 'Índice de Cumplimiento',
-      value: '87/100',
-      target: '85/100',
-      icon: Shield,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      progress: 87
-    },
-    {
-      title: 'Datos Procesados',
-      value: '1.2M',
-      icon: BarChart3,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      progress: 75
-    },
-    {
-      title: 'Ejecuciones Hoy',
-      value: '24',
-      icon: TrendingUp,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      progress: 60
-    }
-  ];
-
   const recentActivities = [
     { action: 'Ejecución Batch completada', time: '10:30 AM', status: 'success' },
     { action: 'Nuevo universo creado', time: '09:15 AM', status: 'info' },
@@ -68,7 +29,6 @@ const Dashboard: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
-
           Panel de Control - Anonimización de Datos
         </h1>
         <p className="text-gray-600">Monitoreo y gestión del cumplimiento normativo</p>
@@ -97,39 +57,8 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      {/* KPIs Principales */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpis.map((kpi, index) => {
-          const Icon = kpi.icon;
-          return (
-            <div key={index} className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-lg ${kpi.bgColor}`}>
-                  <Icon className={kpi.color} size={24} />
-                </div>
-              </div>
-              
-              <h3 className="text-sm font-medium text-gray-600 mb-1">{kpi.title}</h3>
-              <p className={`text-2xl font-bold ${kpi.color} mb-2`}>{kpi.value}</p>
-              
-              {kpi.target && (
-                <p className="text-xs text-gray-500 mb-3">Objetivo: {kpi.target}</p>
-              )}
-              
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className={`h-2 rounded-full ${
-                    kpi.color.includes('green') ? 'bg-green-500' :
-                    kpi.color.includes('blue') ? 'bg-zurich-blue-500' :
-                    'bg-purple-500'
-                  }`}
-                  style={{ width: `${kpi.progress}%` }}
-                ></div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Métricas del Sistema - Componente SystemMetrics */}
+      <SystemMetrics />
       
       {/* Resumen de Estados y Actividades */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
