@@ -27,36 +27,31 @@ export interface SecuritySettings {
     requireNumbers: boolean;
     requireSpecialChars: boolean;
     expirationDays: number;
-    passwordMinLength:number;
-    
-};
-sessionSecurity: {
+  };
+  sessionSecurity: {
     maxSessionDuration: number;
     idleTimeout: number;
     maxConcurrentSessions: number;
     requireReauthentication: boolean;
-    passwordMinLength:number;
-};
-auditSettings: {
+  };
+  auditSettings: {
     enableAuditLogging: boolean;
     logLevel: 'basic' | 'detailed' | 'verbose';
     retentionDays: number;
     enableRealTimeAlerts: boolean;
-    passwordMinLength:number;
-};
-accessControl: {
+  };
+  accessControl: {
     enableTwoFactor: boolean;
     allowedIpRanges: string[];
     blockSuspiciousActivity: boolean;
     maxFailedAttempts: number;
-    passwordMinLength:number;
   };
 }
 
 export interface UserPreferences {
   theme: 'light' | 'dark' | 'auto';
   language: string;
-  timezone: number;
+  timezone: string;
   notifications: {
     email: boolean;
     browser: boolean;
@@ -77,12 +72,11 @@ export interface UserPreferences {
 }
 
 export interface AnonymizationSettings {
-
   defaultTechniques: {
     pii: string[];
     sensitive: string[];
     confidential: string[];
-    personalData:string[]
+    personalData: string[];
   };
   qualitySettings: {
     preserveDataUtility: boolean;

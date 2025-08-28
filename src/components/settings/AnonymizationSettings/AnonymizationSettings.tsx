@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RotateCcw, Shield, Hash, Eye, Key, Shuffle, Settings, AlertTriangle } from 'lucide-react';
+import { Save, RotateCcw, Shield, Settings, AlertTriangle } from 'lucide-react';
 import type { AnonymizationSettings as AnonymizationSettingsType } from '../../../types/settings.types';
-import { SettingsService } from '../../../services/settings/SettingsService';
+import { settingsService } from '../../../services/settings/SettingsService';
 
 interface AnonymizationSettingsProps {
   onSave?: (settings: AnonymizationSettingsType) => void;
@@ -10,43 +10,29 @@ interface AnonymizationSettingsProps {
 const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave }) => {
   const [settings, setSettings] = useState<AnonymizationSettingsType>({
     defaultTechniques: {
-      personalData: 'hashing',
-      financialData: 'tokenization',
-      contactData: 'masking',
-      biometricData: 'encryption'
+      pii: ['masking', 'hashing'],
+      sensitive: ['tokenization', 'encryption'],
+      confidential: ['suppression', 'generalization'],
+      personalData: ['anonymization', 'pseudonymization']
     },
-    hashingConfig: {
-      algorithm: 'SHA-256',
-      saltEnabled: true,
-      iterations: 10000
+    qualitySettings: {
+      preserveDataUtility: true,
+      minimumAnonymityLevel: 3,
+      enableConsistencyChecks: true,
+      validateResults: true
     },
-    maskingConfig: {
-      maskCharacter: '*',
-      preserveLength: true,
-      partialMasking: true,
-      visibleCharacters: 3
-    },
-    tokenizationConfig: {
-      tokenLength: 16,
-      preserveFormat: false,
-      reversible: true
-    },
-    encryptionConfig: {
-      algorithm: 'AES-256',
-      keyRotationDays: 90,
-      backupKeys: true
-    },
-    complianceRules: {
-      ley19628Enabled: true,
-      ley21719Enabled: true,
-      gdprCompliance: false,
-      auditTrailRequired: true
-    },
-    performanceSettings: {
+    performance: {
       batchSize: 1000,
       parallelProcessing: true,
-      maxConcurrentJobs: 4,
-      timeoutMinutes: 30
+      maxMemoryUsage: 2048,
+      enableCaching: true
+    },
+    compliance: {
+      enableLey19628: true,
+      enableLey21719: true,
+      enableGDPR: false,
+      enableCCPA: false,
+      customRegulations: []
     }
   });
 
@@ -59,7 +45,7 @@ const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave })
 
   const loadSettings = async () => {
     try {
-      const systemSettings = await SettingsService.loadSettings();
+      const systemSettings = await settingsService.getSettings();
       if (systemSettings.anonymization) {
         setSettings(systemSettings.anonymization);
       }
@@ -71,7 +57,7 @@ const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave })
   const handleSave = async () => {
     setLoading(true);
     try {
-      await SettingsService.updateSettings({ anonymization: settings });
+      await settingsService.updateSettings('anonymization', settings);
       setSaved(true);
       onSave?.(settings);
       setTimeout(() => setSaved(false), 2000);
@@ -84,7 +70,7 @@ const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave })
 
   const handleReset = async () => {
     try {
-      const defaultSettings = await SettingsService.getDefaultSettings();
+      const defaultSettings = await settingsService.getDefaultSettings();
       if (defaultSettings.anonymization) {
         setSettings(defaultSettings.anonymization);
       }
@@ -93,85 +79,44 @@ const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave })
     }
   };
 
-  const updateDefaultTechnique = (dataType: keyof AnonymizationSettingsType['defaultTechniques'], technique: string) => {
+  const updateDefaultTechniques = (field: keyof AnonymizationSettingsType['defaultTechniques'], value: string[]) => {
     setSettings(prev => ({
       ...prev,
       defaultTechniques: {
         ...prev.defaultTechniques,
-        [dataType]: technique
-      }
-    }));
-  };
-
-  const updateHashingConfig = (field: keyof AnonymizationSettingsType['hashingConfig'], value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      hashingConfig: {
-        ...prev.hashingConfig,
         [field]: value
       }
     }));
   };
 
-  const updateMaskingConfig = (field: keyof AnonymizationSettingsType['maskingConfig'], value: any) => {
+  const updateQualitySettings = (field: keyof AnonymizationSettingsType['qualitySettings'], value: any) => {
     setSettings(prev => ({
       ...prev,
-      maskingConfig: {
-        ...prev.maskingConfig,
+      qualitySettings: {
+        ...prev.qualitySettings,
         [field]: value
       }
     }));
   };
 
-  const updateTokenizationConfig = (field: keyof AnonymizationSettingsType['tokenizationConfig'], value: any) => {
+  const updatePerformance = (field: keyof AnonymizationSettingsType['performance'], value: any) => {
     setSettings(prev => ({
       ...prev,
-      tokenizationConfig: {
-        ...prev.tokenizationConfig,
+      performance: {
+        ...prev.performance,
         [field]: value
       }
     }));
   };
 
-  const updateEncryptionConfig = (field: keyof AnonymizationSettingsType['encryptionConfig'], value: any) => {
+  const updateCompliance = (field: keyof AnonymizationSettingsType['compliance'], value: any) => {
     setSettings(prev => ({
       ...prev,
-      encryptionConfig: {
-        ...prev.encryptionConfig,
+      compliance: {
+        ...prev.compliance,
         [field]: value
       }
     }));
-  };
-
-  const updateComplianceRules = (field: keyof AnonymizationSettingsType['complianceRules'], value: boolean) => {
-    setSettings(prev => ({
-      ...prev,
-      complianceRules: {
-        ...prev.complianceRules,
-        [field]: value
-      }
-    }));
-  };
-
-  const updatePerformanceSettings = (field: keyof AnonymizationSettingsType['performanceSettings'], value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      performanceSettings: {
-        ...prev.performanceSettings,
-        [field]: value
-      }
-    }));
-  };
-
-  const getTechniqueIcon = (technique: string) => {
-    switch (technique) {
-      case 'hashing': return <Hash className="w-4 h-4" />;
-      case 'masking': return <Eye className="w-4 h-4" />;
-      case 'tokenization': return <Key className="w-4 h-4" />;
-      case 'encryption': return <Shield className="w-4 h-4" />;
-      case 'shuffling': return <Shuffle className="w-4 h-4" />;
-      default: return <Settings className="w-4 h-4" />;
-    }
   };
 
   return (
@@ -211,319 +156,134 @@ const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave })
           <Settings className="w-5 h-5" />
           Técnicas por Defecto
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Datos PII (Información Personal Identificable)
+            </label>
+            <div className="space-y-2">
+              {settings.defaultTechniques.pii.map((technique, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    {technique}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Datos Sensibles
+            </label>
+            <div className="space-y-2">
+              {settings.defaultTechniques.sensitive.map((technique, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                    {technique}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Datos Confidenciales
+            </label>
+            <div className="space-y-2">
+              {settings.defaultTechniques.confidential.map((technique, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
+                    {technique}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Datos Personales
             </label>
-            <select
-              value={settings.defaultTechniques.personalData}
-              onChange={(e) => updateDefaultTechnique('personalData', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="hashing">Hashing</option>
-              <option value="masking">Masking</option>
-              <option value="tokenization">Tokenización</option>
-              <option value="encryption">Encriptación</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Datos Financieros
-            </label>
-            <select
-              value={settings.defaultTechniques.financialData}
-              onChange={(e) => updateDefaultTechnique('financialData', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="tokenization">Tokenización</option>
-              <option value="encryption">Encriptación</option>
-              <option value="hashing">Hashing</option>
-              <option value="masking">Masking</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Datos de Contacto
-            </label>
-            <select
-              value={settings.defaultTechniques.contactData}
-              onChange={(e) => updateDefaultTechnique('contactData', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="masking">Masking</option>
-              <option value="hashing">Hashing</option>
-              <option value="tokenization">Tokenización</option>
-              <option value="shuffling">Shuffling</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Datos Biométricos
-            </label>
-            <select
-              value={settings.defaultTechniques.biometricData}
-              onChange={(e) => updateDefaultTechnique('biometricData', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="encryption">Encriptación</option>
-              <option value="hashing">Hashing</option>
-              <option value="tokenization">Tokenización</option>
-            </select>
+            <div className="space-y-2">
+              {settings.defaultTechniques.personalData.map((technique, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                    {technique}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Configuración de Hashing */}
-      <div className="card p-6">
-        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Hash className="w-5 h-5" />
-          Configuración de Hashing
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Algoritmo
-            </label>
-            <select
-              value={settings.hashingConfig.algorithm}
-              onChange={(e) => updateHashingConfig('algorithm', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="SHA-256">SHA-256</option>
-              <option value="SHA-512">SHA-512</option>
-              <option value="MD5">MD5</option>
-              <option value="BCRYPT">BCRYPT</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Iteraciones
-            </label>
-            <input
-              type="number"
-              value={settings.hashingConfig.iterations}
-              onChange={(e) => updateHashingConfig('iterations', parseInt(e.target.value))}
-              min="1000"
-              max="100000"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.hashingConfig.saltEnabled}
-                onChange={(e) => updateHashingConfig('saltEnabled', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Habilitar Salt</span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Configuración de Masking */}
-      <div className="card p-6">
-        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Eye className="w-5 h-5" />
-          Configuración de Masking
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Carácter de Máscara
-            </label>
-            <input
-              type="text"
-              value={settings.maskingConfig.maskCharacter}
-              onChange={(e) => updateMaskingConfig('maskCharacter', e.target.value.charAt(0))}
-              maxLength={1}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Caracteres Visibles
-            </label>
-            <input
-              type="number"
-              value={settings.maskingConfig.visibleCharacters}
-              onChange={(e) => updateMaskingConfig('visibleCharacters', parseInt(e.target.value))}
-              min="0"
-              max="10"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.maskingConfig.preserveLength}
-                onChange={(e) => updateMaskingConfig('preserveLength', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Preservar Longitud</span>
-            </label>
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.maskingConfig.partialMasking}
-                onChange={(e) => updateMaskingConfig('partialMasking', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Masking Parcial</span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Configuración de Tokenización */}
-      <div className="card p-6">
-        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Key className="w-5 h-5" />
-          Configuración de Tokenización
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Longitud del Token
-            </label>
-            <input
-              type="number"
-              value={settings.tokenizationConfig.tokenLength}
-              onChange={(e) => updateTokenizationConfig('tokenLength', parseInt(e.target.value))}
-              min="8"
-              max="64"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.tokenizationConfig.preserveFormat}
-                onChange={(e) => updateTokenizationConfig('preserveFormat', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Preservar Formato</span>
-            </label>
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.tokenizationConfig.reversible}
-                onChange={(e) => updateTokenizationConfig('reversible', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Reversible</span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Configuración de Encriptación */}
+      {/* Configuración de Calidad */}
       <div className="card p-6">
         <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
           <Shield className="w-5 h-5" />
-          Configuración de Encriptación
+          Configuración de Calidad
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Algoritmo
-            </label>
-            <select
-              value={settings.encryptionConfig.algorithm}
-              onChange={(e) => updateEncryptionConfig('algorithm', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="AES-256">AES-256</option>
-              <option value="AES-128">AES-128</option>
-              <option value="RSA-2048">RSA-2048</option>
-              <option value="RSA-4096">RSA-4096</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Rotación de Claves (días)
+              Nivel Mínimo de Anonimidad
             </label>
             <input
               type="number"
-              value={settings.encryptionConfig.keyRotationDays}
-              onChange={(e) => updateEncryptionConfig('keyRotationDays', parseInt(e.target.value))}
-              min="30"
-              max="365"
+              min="1"
+              max="10"
+              value={settings.qualitySettings.minimumAnonymityLevel}
+              onChange={(e) => updateQualitySettings('minimumAnonymityLevel', parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.encryptionConfig.backupKeys}
-                onChange={(e) => updateEncryptionConfig('backupKeys', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Backup de Claves</span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Reglas de Cumplimiento */}
-      <div className="card p-6">
-        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5" />
-          Reglas de Cumplimiento
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.complianceRules.ley19628Enabled}
-                onChange={(e) => updateComplianceRules('ley19628Enabled', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Ley 19.628 (Protección de Datos)</span>
-            </label>
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.complianceRules.ley21719Enabled}
-                onChange={(e) => updateComplianceRules('ley21719Enabled', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Ley 21.719 (Datos Biométricos)</span>
-            </label>
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.complianceRules.gdprCompliance}
-                onChange={(e) => updateComplianceRules('gdprCompliance', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">GDPR (Reglamento Europeo)</span>
-            </label>
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.complianceRules.auditTrailRequired}
-                onChange={(e) => updateComplianceRules('auditTrailRequired', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Auditoría Obligatoria</span>
-            </label>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Preservar Utilidad de Datos</label>
+                <p className="text-xs text-gray-500">Mantiene la utilidad para análisis</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.qualitySettings.preserveDataUtility}
+                  onChange={(e) => updateQualitySettings('preserveDataUtility', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Verificaciones de Consistencia</label>
+                <p className="text-xs text-gray-500">Valida la consistencia de datos</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.qualitySettings.enableConsistencyChecks}
+                  onChange={(e) => updateQualitySettings('enableConsistencyChecks', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Validar Resultados</label>
+                <p className="text-xs text-gray-500">Verificación automática de resultados</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.qualitySettings.validateResults}
+                  onChange={(e) => updateQualitySettings('validateResults', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -534,58 +294,158 @@ const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave })
           <Settings className="w-5 h-5" />
           Configuración de Rendimiento
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Tamaño de Lote
             </label>
             <input
               type="number"
-              value={settings.performanceSettings.batchSize}
-              onChange={(e) => updatePerformanceSettings('batchSize', parseInt(e.target.value))}
               min="100"
               max="10000"
+              value={settings.performance.batchSize}
+              onChange={(e) => updatePerformance('batchSize', parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Trabajos Concurrentes
+              Uso Máximo de Memoria (MB)
             </label>
             <input
               type="number"
-              value={settings.performanceSettings.maxConcurrentJobs}
-              onChange={(e) => updatePerformanceSettings('maxConcurrentJobs', parseInt(e.target.value))}
-              min="1"
-              max="16"
+              min="512"
+              max="8192"
+              value={settings.performance.maxMemoryUsage}
+              onChange={(e) => updatePerformance('maxMemoryUsage', parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Timeout (minutos)
-            </label>
-            <input
-              type="number"
-              value={settings.performanceSettings.timeoutMinutes}
-              onChange={(e) => updatePerformanceSettings('timeoutMinutes', parseInt(e.target.value))}
-              min="5"
-              max="120"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 cursor-pointer">
+        </div>
+        
+        <div className="mt-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Procesamiento Paralelo</label>
+              <p className="text-xs text-gray-500">Utiliza múltiples hilos de procesamiento</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.performanceSettings.parallelProcessing}
-                onChange={(e) => updatePerformanceSettings('parallelProcessing', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                checked={settings.performance.parallelProcessing}
+                onChange={(e) => updatePerformance('parallelProcessing', e.target.checked)}
+                className="sr-only peer"
               />
-              <span className="text-sm font-medium text-gray-700">Procesamiento Paralelo</span>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Habilitar Caché</label>
+              <p className="text-xs text-gray-500">Almacena resultados temporales</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.performance.enableCaching}
+                onChange={(e) => updatePerformance('enableCaching', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
         </div>
+      </div>
+
+      {/* Configuración de Cumplimiento */}
+      <div className="card p-6">
+        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5" />
+          Configuración de Cumplimiento
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Ley 19.628 (Protección de Datos)</label>
+              <p className="text-xs text-gray-500">Normativa chilena de protección de datos</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.compliance.enableLey19628}
+                onChange={(e) => updateCompliance('enableLey19628', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Ley 21.719 (Datos Biométricos)</label>
+              <p className="text-xs text-gray-500">Normativa chilena para datos biométricos</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.compliance.enableLey21719}
+                onChange={(e) => updateCompliance('enableLey21719', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">GDPR (Reglamento Europeo)</label>
+              <p className="text-xs text-gray-500">Reglamento General de Protección de Datos</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.compliance.enableGDPR}
+                onChange={(e) => updateCompliance('enableGDPR', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">CCPA (California Consumer Privacy Act)</label>
+              <p className="text-xs text-gray-500">Normativa de privacidad de California</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.compliance.enableCCPA}
+                onChange={(e) => updateCompliance('enableCCPA', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+        </div>
+        
+        {settings.compliance.customRegulations.length > 0 && (
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Regulaciones Personalizadas
+            </label>
+            <div className="space-y-2">
+              {settings.compliance.customRegulations.map((regulation, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+                    {regulation}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

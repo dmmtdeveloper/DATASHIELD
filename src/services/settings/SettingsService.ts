@@ -5,7 +5,7 @@ export class SettingsService {
   private readonly API_BASE_URL = '/api/settings';
 
   // Configuraciones por defecto
-  private getDefaultSettings(): SystemSettings {
+  private getDefaultSettingsInternal(): SystemSettings {
     return {
       general: {
         systemName: 'Sistema de Anonimización de Datos',
@@ -18,7 +18,14 @@ export class SettingsService {
         sessionTimeout: 30,
         autoSaveInterval: 5,
         enableDebugMode: false,
-        enableMaintenanceMode: false
+        enableMaintenanceMode: false,
+        applicationName: 'Sistema de Anonimización de Datos',
+        language: 'es',
+        defaultRetentionDays: 90,
+        enableAuditLog: true,
+        enableNotifications: true,
+        autoBackup: true,
+        backupFrequency: 'daily'
       },
       security: {
         passwordPolicy: {
@@ -51,6 +58,7 @@ export class SettingsService {
       userPreferences: {
         theme: 'light',
         language: 'es',
+        timezone: 'America/Santiago',
         notifications: {
           email: true,
           browser: true,
@@ -73,7 +81,8 @@ export class SettingsService {
         defaultTechniques: {
           pii: ['masking', 'hashing'],
           sensitive: ['tokenization', 'encryption'],
-          confidential: ['suppression', 'generalization']
+          confidential: ['suppression', 'generalization'],
+          personalData: ['anonymization', 'pseudonymization']
         },
         qualitySettings: {
           preserveDataUtility: true,
@@ -129,6 +138,16 @@ export class SettingsService {
     };
   }
 
+  // Método público para obtener configuraciones por defecto
+  async getDefaultSettings(): Promise<SystemSettings> {
+    return this.getDefaultSettingsInternal();
+  }
+
+  // Método público para obtener configuraciones actuales
+  async getSettings(): Promise<SystemSettings> {
+    return this.loadSettings();
+  }
+
   // Cargar configuraciones
   async loadSettings(): Promise<SystemSettings> {
     try {
@@ -136,7 +155,8 @@ export class SettingsService {
       const response = await fetch(`${this.API_BASE_URL}`);
       if (response.ok) {
         const serverSettings = await response.json();
-        return { ...this.getDefaultSettings(), ...serverSettings };
+        const currentSettings = await this.loadSettings();
+        return { ...this.getDefaultSettingsInternal(), ...currentSettings };
       }
     } catch (error) {
       console.warn('No se pudieron cargar las configuraciones del servidor, usando localStorage:', error);
@@ -147,13 +167,13 @@ export class SettingsService {
     if (localSettings) {
       try {
         const parsedSettings = JSON.parse(localSettings);
-        return { ...this.getDefaultSettings(), ...parsedSettings };
+        return { ...this.getDefaultSettingsInternal(), ...parsedSettings };
       } catch (error) {
         console.error('Error al parsear configuraciones locales:', error);
       }
     }
 
-    return this.getDefaultSettings();
+    return this.getDefaultSettingsInternal();
   }
 
   // Guardar configuraciones
@@ -199,7 +219,7 @@ export class SettingsService {
 
   // Restablecer configuraciones
   async resetSettings(category?: keyof SystemSettings): Promise<SystemSettings> {
-    const defaultSettings = this.getDefaultSettings();
+    const defaultSettings = this.getDefaultSettingsInternal();
     
     if (category) {
       const currentSettings = await this.loadSettings();
@@ -270,7 +290,7 @@ export class SettingsService {
         throw new Error(`Configuraciones inválidas: ${validation.errors.join(', ')}`);
       }
 
-      const mergedSettings = { ...this.getDefaultSettings(), ...importedSettings };
+      const mergedSettings = { ...this.getDefaultSettingsInternal(), ...importedSettings };
       await this.saveSettings(mergedSettings);
       return mergedSettings;
     } catch (error) {

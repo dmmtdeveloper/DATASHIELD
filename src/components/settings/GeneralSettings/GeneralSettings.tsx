@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Save, RotateCcw, Globe, Clock, Database } from 'lucide-react';
 import type { GeneralSettings as GeneralSettingsType } from '../../../types/settings.types';
-import { SettingsService } from '../../../services/settings/SettingsService';
+import { settingsService } from '../../../services/settings/SettingsService';
 
-const GeneralSettings: React.FC = () => {
+interface GeneralSettingsProps {
+  onSettingsChange?: () => void;
+}
+
+const GeneralSettings: React.FC<GeneralSettingsProps> = ({ onSettingsChange }) => {
   const [settings, setSettings] = useState<GeneralSettingsType>({
     applicationName: 'Zurich Anonimización',
     language: 'es',
@@ -27,7 +31,7 @@ const GeneralSettings: React.FC = () => {
 
   const loadSettings = async () => {
     try {
-      const currentSettings = await SettingsService.getSettings();
+      const currentSettings = await settingsService.getSettings();
       setSettings(currentSettings.general);
     } catch (error) {
       console.error('Error loading general settings:', error);
@@ -37,7 +41,7 @@ const GeneralSettings: React.FC = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await SettingsService.updateSettings({ general: settings });
+      await settingsService.updateSettings({ general: settings });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -49,7 +53,7 @@ const GeneralSettings: React.FC = () => {
 
   const handleReset = async () => {
     try {
-      const defaultSettings = await SettingsService.getDefaultSettings();
+      const defaultSettings = await settingsService.getDefaultSettings();
       setSettings(defaultSettings.general);
     } catch (error) {
       console.error('Error resetting general settings:', error);
@@ -58,6 +62,7 @@ const GeneralSettings: React.FC = () => {
 
   const handleChange = (field: keyof GeneralSettingsType, value: any) => {
     setSettings(prev => ({ ...prev, [field]: value }));
+    onSettingsChange?.();
   };
 
   return (
