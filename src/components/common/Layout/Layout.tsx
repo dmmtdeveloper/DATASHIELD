@@ -10,6 +10,7 @@ import {
   MousePointer,
   FileText,
   BarChart3,
+  Settings,
   Menu,
   X,
   LogOut,
@@ -36,7 +37,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { text: 'Ejecución Batch', icon: Play, path: '/batch' },
     { text: 'Ejecución Online', icon: MousePointer, path: '/online' },
     { text: 'Auditoría', icon: FileText, path: '/audit' },
-    { text: 'Monitoreo', icon: BarChart3, path: '/monitoring' }
+    { text: 'Monitoreo', icon: BarChart3, path: '/monitoring' },
+    { text: 'Configuraciones', icon: Settings, path: '/settings' }
   ];
 
   const handleLogout = () => {

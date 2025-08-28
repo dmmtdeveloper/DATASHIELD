@@ -11,6 +11,7 @@ import AttributeCatalog from './pages/AttributeCatalog/AttributeCatalog';
 import BatchExecution from './pages/BatchExecution/BatchExecution';
 import OnlineExecution from './pages/OnlineExecution/OnlineExecution';
 import AuditTrail from './pages/AuditTrail/AuditTrail';
+import Settings from './pages/Settings/Settings';
 
 // Componentes temporales para las rutas restantes
 // const BatchExecution = () => <div className="card p-6"><h2 className="text-2xl font-bold mb-4">Ejecución Batch</h2><p>En desarrollo...</p></div>;
@@ -40,6 +41,7 @@ function App() {
                   <Route path="/online" element={<OnlineExecution />} />
                   <Route path="/audit" element={<AuditTrail />} />
                   <Route path="/monitoring" element={<Monitoring />} />
+                  <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Layout>
