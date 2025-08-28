@@ -128,7 +128,7 @@ const NewSessionModal: React.FC<NewSessionModalProps> = ({
           <h2 className="text-2xl font-bold text-gray-900">Nueva Sesión Online</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

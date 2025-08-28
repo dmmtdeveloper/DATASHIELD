@@ -283,20 +283,19 @@ const OnlineExecution: React.FC = () => {
           </div>
         </div>
       )}
-  // Agregar al final del componente, antes del cierre del div principal:
-        {/* Modal de Nueva Sesión */}
-   <NewSessionModal 
-          isOpen={showConfig}
-          onClose={() => setShowConfig(false)}
-          onCreateSession={(newSession) => {
-            setSessions(prev => [...prev, newSession]);
-            setActiveSession(newSession);
-            setShowConfig(false);
-          }}
-        />
+
+      {/* Modal de Nueva Sesión */}
+      <NewSessionModal 
+        isOpen={showConfig}
+        onClose={() => setShowConfig(false)}
+        onCreateSession={(newSession) => {
+          setSessions(prev => [...prev, newSession]);
+          setActiveSession(newSession);
+          setShowConfig(false);
+        }}
+      />
     </div>
   );
 };
-
 
 export default OnlineExecution;

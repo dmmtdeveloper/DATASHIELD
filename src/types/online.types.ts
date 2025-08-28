@@ -62,6 +62,7 @@ export interface OnlineProcessingMetrics {
   cpuUsage: number;
   latency: number; // en milisegundos
   throughput: number;
+  errorRate: number;
 }
 
 export interface RealTimeAlert {
