@@ -11,7 +11,7 @@ import {
   Tag,
   Settings
 } from 'lucide-react';
-import type { AuditFilters as AuditFiltersType, AuditLog } from '../../../types/audit.types';
+import type { AuditFilters as AuditFiltersType, AuditLog, AuditSeverity } from '../../../types/audit.types';
 
 interface AuditFiltersProps {
   filters: AuditFiltersType;
@@ -223,10 +223,10 @@ const AuditFilters: React.FC<AuditFiltersProps> = ({
             </label>
             <select
               multiple
-              value={localFilters.users || []}
+              value={localFilters.userId || []}
               onChange={(e) => {
                 const values = Array.from(e.target.selectedOptions, option => option.value);
-                handleFilterChange('users', values);
+                handleFilterChange('userId', values);
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               size={4}
@@ -294,13 +294,13 @@ const AuditFilters: React.FC<AuditFiltersProps> = ({
                 <label key={severity} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={(localFilters.severities || []).includes(severity)}
+                    checked={(localFilters.severity || []).includes(severity as AuditSeverity)}
                     onChange={(e) => {
-                      const currentSeverities = localFilters.severities || [];
+                      const currentSeverities = localFilters.severity || [];
                       const newSeverities = e.target.checked
                         ? [...currentSeverities, severity]
                         : currentSeverities.filter(s => s !== severity);
-                      handleFilterChange('severities', newSeverities);
+                      handleFilterChange('severity', newSeverities);
                     }}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
@@ -322,13 +322,13 @@ const AuditFilters: React.FC<AuditFiltersProps> = ({
                 <label key={status} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={(localFilters.statuses || []).includes(status)}
+                    checked={(localFilters.status || []).includes(status)}
                     onChange={(e) => {
-                      const currentStatuses = localFilters.statuses || [];
+                      const currentStatuses = localFilters.status || [];
                       const newStatuses = e.target.checked
                         ? [...currentStatuses, status]
                         : currentStatuses.filter(s => s !== status);
-                      handleFilterChange('statuses', newStatuses);
+                      handleFilterChange('status', newStatuses);
                     }}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
