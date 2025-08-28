@@ -1,17 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Database,
-  Table,
-  Columns,
-  Settings,
-  Calendar,
-  Clock,
-  Play,
   Save,
   Eye,
-  Filter,
   Plus,
-  Minus,
   AlertTriangle,
   CheckCircle,
   Info,

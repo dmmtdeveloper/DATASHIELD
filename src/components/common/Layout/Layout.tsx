@@ -13,7 +13,9 @@ import {
   Menu,
   X,
   LogOut,
-  User
+  User,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -56,9 +58,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             )}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className=""
+              className="text-gray-700"
             >
-              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+              {sidebarOpen ? <PanelLeftClose size={24} /> : <PanelLeftOpen size={24} />}
             </button>
           </div>
         </div>
@@ -118,7 +120,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           ) : (
             <button
               onClick={handleLogout}
-              className="w-full p-2 text-gray-100 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+              className="w-full p-2  text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
               title="Cerrar Sesión"
             >
               <LogOut size={20} className="mx-auto" />
