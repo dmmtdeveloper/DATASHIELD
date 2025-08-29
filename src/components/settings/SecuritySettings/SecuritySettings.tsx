@@ -471,7 +471,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font -medium text-gray-700 mb-2">
               Algoritmo de Hashing
             </label>
             <select
