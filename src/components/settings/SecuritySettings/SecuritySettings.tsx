@@ -443,50 +443,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
         </div>
       </div>
 
-      {/* Eliminar toda esta sección desde la línea ~445 hasta ~480: */}
-      {/* Encryption Settings */}
-      {/* 
-      <div className="card p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Key className="w-5 h-5 text-blue-600" />
-          <h4 className="text-md font-semibold text-gray-800">
-            Cifrado y Hashing
-          </h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Algoritmo de Cifrado
-            </label>
-            <select
-              value={settings.encryptionAlgorithm}
-              onChange={(e) =>
-                handleChange("encryptionAlgorithm", e.target.value)
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="AES-256">AES-256</option>
-              <option value="AES-192">AES-192</option>
-              <option value="AES-128">AES-128</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font -medium text-gray-700 mb-2">
-              Algoritmo de Hashing
-            </label>
-            <select
-              value={settings.hashingAlgorithm}
-              onChange={(e) => handleChange("hashingAlgorithm", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="SHA-256">SHA-256</option>
-              <option value="SHA-512">SHA-512</option>
-              <option value="bcrypt">bcrypt</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      */}
+     
 
       {/* Audit Settings */}
       <div className="card p-6">
