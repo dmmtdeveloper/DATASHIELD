@@ -1,41 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Save, RotateCcw, Shield, Settings, AlertTriangle } from 'lucide-react';
-import type { AnonymizationSettings as AnonymizationSettingsType } from '../../../types/settings.types';
-import { settingsService } from '../../../services/settings/SettingsService';
+import React, { useState, useEffect } from "react";
+import { Save, RotateCcw, Sliders, Shield, Eye, Hash } from "lucide-react";
+import { settingsService } from "../../../services/settings/SettingsService";
 
 interface AnonymizationSettingsProps {
-  onSave?: (settings: AnonymizationSettingsType) => void;
+  onSettingsChange?: () => void;
 }
 
-const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave }) => {
-  const [settings, setSettings] = useState<AnonymizationSettingsType>({
+const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({
+  onSettingsChange,
+}) => {
+  const [settings, setSettings] = useState({
     defaultTechniques: {
-      pii: ['masking', 'hashing'],
-      sensitive: ['tokenization', 'encryption'],
-      confidential: ['suppression', 'generalization'],
-      personalData: ['anonymization', 'pseudonymization']
+      enableMasking: true,
+      enableEncryption: true,
+      enableTokenization: false,
+      enablePseudonymization: true,
+    },
+    dataRetention: {
+      originalDataRetentionDays: 30,
+      anonymizedDataRetentionDays: 365,
+      autoDeleteOriginal: true,
     },
     qualitySettings: {
       preserveDataUtility: true,
-      minimumAnonymityLevel: 3,
-      enableConsistencyChecks: true,
-      validateResults: true
+      minimumAnonymityLevel: "k5",
+      enableQualityMetrics: true,
     },
-    performance: {
-      batchSize: 1000,
-      parallelProcessing: true,
-      maxMemoryUsage: 2048,
-      enableCaching: true
-    },
-    compliance: {
-      enableLey19628: true,
-      enableLey21719: true,
-      enableGDPR: false,
-      enableCCPA: false,
-      customRegulations: []
-    }
   });
-
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -45,24 +36,64 @@ const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave })
 
   const loadSettings = async () => {
     try {
-      const systemSettings = await settingsService.getSettings();
-      if (systemSettings.anonymization) {
-        setSettings(systemSettings.anonymization);
+      const currentSettings = await settingsService.getSettings();
+      // Validar y establecer valores por defecto si no existen
+      if (currentSettings && currentSettings.anonymization) {
+        const anonymizationSettings = currentSettings.anonymization;
+
+        setSettings({
+          defaultTechniques: {
+            enableMasking:
+              anonymizationSettings.defaultTechniques?.enableMasking ?? true,
+            enableEncryption:
+              anonymizationSettings.defaultTechniques?.enableEncryption ?? true,
+            enableTokenization:
+              anonymizationSettings.defaultTechniques?.enableTokenization ??
+              false,
+            enablePseudonymization:
+              anonymizationSettings.defaultTechniques?.enablePseudonymization ??
+              true,
+          },
+          dataRetention: {
+            originalDataRetentionDays:
+              anonymizationSettings.dataRetention?.originalDataRetentionDays ??
+              30,
+            anonymizedDataRetentionDays:
+              anonymizationSettings.dataRetention
+                ?.anonymizedDataRetentionDays ?? 365,
+            autoDeleteOriginal:
+              anonymizationSettings.dataRetention?.autoDeleteOriginal ?? true,
+          },
+          qualitySettings: {
+            preserveDataUtility:
+              anonymizationSettings.qualitySettings?.preserveDataUtility ??
+              true,
+            minimumAnonymityLevel:
+              anonymizationSettings.qualitySettings?.minimumAnonymityLevel ??
+              "k5",
+            enableQualityMetrics:
+              anonymizationSettings.qualitySettings?.enableQualityMetrics ??
+              true,
+          },
+        });
+      } else {
+        // Si no hay configuraciones, usar valores por defecto
+        console.log("No anonymization settings found, using defaults");
       }
     } catch (error) {
-      console.error('Error loading anonymization settings:', error);
+      console.error("Error loading anonymization settings:", error);
+      // Mantener los valores por defecto del estado inicial
     }
   };
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      await settingsService.updateSettings('anonymization', settings);
+      await settingsService.updateSettings("anonymization", settings);
       setSaved(true);
-      onSave?.(settings);
-      setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => setSaved(false), 3000);
     } catch (error) {
-      console.error('Error saving anonymization settings:', error);
+      console.error("Error saving anonymization settings:", error);
     } finally {
       setLoading(false);
     }
@@ -71,66 +102,138 @@ const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave })
   const handleReset = async () => {
     try {
       const defaultSettings = await settingsService.getDefaultSettings();
-      if (defaultSettings.anonymization) {
-        setSettings(defaultSettings.anonymization);
+      if (defaultSettings && defaultSettings.anonymization) {
+        const anonymizationSettings = defaultSettings.anonymization;
+
+        setSettings({
+          defaultTechniques: {
+            enableMasking:
+              anonymizationSettings.defaultTechniques?.enableMasking ?? true,
+            enableEncryption:
+              anonymizationSettings.defaultTechniques?.enableEncryption ?? true,
+            enableTokenization:
+              anonymizationSettings.defaultTechniques?.enableTokenization ??
+              false,
+            enablePseudonymization:
+              anonymizationSettings.defaultTechniques?.enablePseudonymization ??
+              true,
+          },
+          dataRetention: {
+            originalDataRetentionDays:
+              anonymizationSettings.dataRetention?.originalDataRetentionDays ??
+              30,
+            anonymizedDataRetentionDays:
+              anonymizationSettings.dataRetention
+                ?.anonymizedDataRetentionDays ?? 365,
+            autoDeleteOriginal:
+              anonymizationSettings.dataRetention?.autoDeleteOriginal ?? true,
+          },
+          qualitySettings: {
+            preserveDataUtility:
+              anonymizationSettings.qualitySettings?.preserveDataUtility ??
+              true,
+            minimumAnonymityLevel:
+              anonymizationSettings.qualitySettings?.minimumAnonymityLevel ??
+              "k5",
+            enableQualityMetrics:
+              anonymizationSettings.qualitySettings?.enableQualityMetrics ??
+              true,
+          },
+        });
+      } else {
+        // Si no hay configuraciones por defecto, restablecer a los valores iniciales
+        setSettings({
+          defaultTechniques: {
+            enableMasking: true,
+            enableEncryption: true,
+            enableTokenization: false,
+            enablePseudonymization: true,
+          },
+          dataRetention: {
+            originalDataRetentionDays: 30,
+            anonymizedDataRetentionDays: 365,
+            autoDeleteOriginal: true,
+          },
+          qualitySettings: {
+            preserveDataUtility: true,
+            minimumAnonymityLevel: "k5",
+            enableQualityMetrics: true,
+          },
+        });
       }
     } catch (error) {
-      console.error('Error resetting anonymization settings:', error);
+      console.error("Error resetting anonymization settings:", error);
+      // Restablecer a valores por defecto
+      setSettings({
+        defaultTechniques: {
+          enableMasking: true,
+          enableEncryption: true,
+          enableTokenization: false,
+          enablePseudonymization: true,
+        },
+        dataRetention: {
+          originalDataRetentionDays: 30,
+          anonymizedDataRetentionDays: 365,
+          autoDeleteOriginal: true,
+        },
+        qualitySettings: {
+          preserveDataUtility: true,
+          minimumAnonymityLevel: "k5",
+          enableQualityMetrics: true,
+        },
+      });
     }
   };
 
-  const updateDefaultTechniques = (field: keyof AnonymizationSettingsType['defaultTechniques'], value: string[]) => {
-    setSettings(prev => ({
+  const handleTechniqueChange = (field: string, value: boolean) => {
+    setSettings((prev) => ({
       ...prev,
       defaultTechniques: {
         ...prev.defaultTechniques,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
+    onSettingsChange?.();
   };
 
-  const updateQualitySettings = (field: keyof AnonymizationSettingsType['qualitySettings'], value: any) => {
-    setSettings(prev => ({
+  const handleRetentionChange = (field: string, value: any) => {
+    setSettings((prev) => ({
+      ...prev,
+      dataRetention: {
+        ...prev.dataRetention,
+        [field]: value,
+      },
+    }));
+    onSettingsChange?.();
+  };
+
+  const handleQualityChange = (field: string, value: any) => {
+    setSettings((prev) => ({
       ...prev,
       qualitySettings: {
         ...prev.qualitySettings,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
-  };
-
-  const updatePerformance = (field: keyof AnonymizationSettingsType['performance'], value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      performance: {
-        ...prev.performance,
-        [field]: value
-      }
-    }));
-  };
-
-  const updateCompliance = (field: keyof AnonymizationSettingsType['compliance'], value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      compliance: {
-        ...prev.compliance,
-        [field]: value
-      }
-    }));
+    onSettingsChange?.();
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">Configuración de Anonimización</h3>
-          <p className="text-sm text-gray-600">Gestiona las técnicas y parámetros de anonimización</p>
+          <h3 className="text-lg font-semibold text-gray-800">
+            Configuraciones de Anonimización
+          </h3>
+          <p className="text-sm text-gray-600">
+            Configuración de técnicas y políticas de anonimización
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex gap-3">
           <button
             onClick={handleReset}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
             Restablecer
@@ -140,312 +243,264 @@ const AnonymizationSettings: React.FC<AnonymizationSettingsProps> = ({ onSave })
             disabled={loading}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               saved
-                ? 'bg-green-600 text-white'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                ? "bg-green-600 text-white"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            } disabled:opacity-50`}
           >
             <Save className="w-4 h-4" />
-            {saved ? 'Guardado' : loading ? 'Guardando...' : 'Guardar'}
+            {loading ? "Guardando..." : saved ? "Guardado" : "Guardar"}
           </button>
         </div>
       </div>
 
-      {/* Técnicas por Defecto */}
+      {/* Default Techniques */}
       <div className="card p-6">
-        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Settings className="w-5 h-5" />
-          Técnicas por Defecto
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Datos PII (Información Personal Identificable)
-            </label>
-            <div className="space-y-2">
-              {settings.defaultTechniques.pii.map((technique, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                    {technique}
-                  </span>
-                </div>
-              ))}
+        <div className="flex items-center gap-2 mb-4">
+          <Sliders className="w-5 h-5 text-blue-600" />
+          <h4 className="text-md font-semibold text-gray-800">
+            Técnicas por Defecto
+          </h4>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Enmascaramiento de Datos
+              </label>
+              <p className="text-xs text-gray-500">
+                Oculta información sensible con caracteres especiales
+              </p>
             </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.defaultTechniques.enableMasking}
+                onChange={(e) =>
+                  handleTechniqueChange("enableMasking", e.target.checked)
+                }
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Datos Sensibles
-            </label>
-            <div className="space-y-2">
-              {settings.defaultTechniques.sensitive.map((technique, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                    {technique}
-                  </span>
-                </div>
-              ))}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Cifrado de Datos
+              </label>
+              <p className="text-xs text-gray-500">
+                Protege datos mediante algoritmos de cifrado
+              </p>
             </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.defaultTechniques.enableEncryption}
+                onChange={(e) =>
+                  handleTechniqueChange("enableEncryption", e.target.checked)
+                }
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Datos Confidenciales
-            </label>
-            <div className="space-y-2">
-              {settings.defaultTechniques.confidential.map((technique, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-                    {technique}
-                  </span>
-                </div>
-              ))}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Tokenización
+              </label>
+              <p className="text-xs text-gray-500">
+                Reemplaza datos sensibles con tokens únicos
+              </p>
             </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.defaultTechniques.enableTokenization}
+                onChange={(e) =>
+                  handleTechniqueChange("enableTokenization", e.target.checked)
+                }
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Datos Personales
-            </label>
-            <div className="space-y-2">
-              {settings.defaultTechniques.personalData.map((technique, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                    {technique}
-                  </span>
-                </div>
-              ))}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Pseudonimización
+              </label>
+              <p className="text-xs text-gray-500">
+                Reemplaza identificadores con pseudónimos
+              </p>
             </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.defaultTechniques.enablePseudonymization}
+                onChange={(e) =>
+                  handleTechniqueChange(
+                    "enablePseudonymization",
+                    e.target.checked
+                  )
+                }
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
           </div>
         </div>
       </div>
 
-      {/* Configuración de Calidad */}
+      {/* Data Retention */}
       <div className="card p-6">
-        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Shield className="w-5 h-5" />
-          Configuración de Calidad
-        </h4>
+        <div className="flex items-center gap-2 mb-4">
+          <Shield className="w-5 h-5 text-blue-600" />
+          <h4 className="text-md font-semibold text-gray-800">
+            Retención de Datos
+          </h4>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nivel Mínimo de Anonimidad
+              Retención de Datos Originales (días)
             </label>
             <input
               type="number"
               min="1"
-              max="10"
+              max="365"
+              value={settings.dataRetention?.originalDataRetentionDays ?? 30}
+              onChange={(e) =>
+                handleRetentionChange(
+                  "originalDataRetentionDays",
+                  parseInt(e.target.value)
+                )
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Retención de Datos Anonimizados (días)
+            </label>
+            <input
+              type="number"
+              min="30"
+              max="2555"
+              value={settings.dataRetention?.anonymizedDataRetentionDays ?? 365}
+              onChange={(e) =>
+                handleRetentionChange(
+                  "anonymizedDataRetentionDays",
+                  parseInt(e.target.value)
+                )
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Eliminar Datos Originales Automáticamente
+              </label>
+              <p className="text-xs text-gray-500">
+                Elimina datos originales después del período de retención
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.dataRetention?.autoDeleteOriginal ?? true}
+                onChange={(e) =>
+                  handleRetentionChange("autoDeleteOriginal", e.target.checked)
+                }
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Quality Settings */}
+      <div className="card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Eye className="w-5 h-5 text-blue-600" />
+          <h4 className="text-md font-semibold text-gray-800">
+            Configuración de Calidad
+          </h4>
+        </div>
+
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Preservar Utilidad de Datos
+              </label>
+              <p className="text-xs text-gray-500">
+                Mantiene la utilidad estadística de los datos
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.qualitySettings.preserveDataUtility}
+                onChange={(e) =>
+                  handleQualityChange("preserveDataUtility", e.target.checked)
+                }
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nivel Mínimo de Anonimato
+            </label>
+            <select
               value={settings.qualitySettings.minimumAnonymityLevel}
-              onChange={(e) => updateQualitySettings('minimumAnonymityLevel', parseInt(e.target.value))}
+              onChange={(e) =>
+                handleQualityChange("minimumAnonymityLevel", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            >
+              <option value="k3">K-3 (Básico)</option>
+              <option value="k5">K-5 (Recomendado)</option>
+              <option value="k10">K-10 (Alto)</option>
+              <option value="k20">K-20 (Muy Alto)</option>
+            </select>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Preservar Utilidad de Datos</label>
-                <p className="text-xs text-gray-500">Mantiene la utilidad para análisis</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.qualitySettings.preserveDataUtility}
-                  onChange={(e) => updateQualitySettings('preserveDataUtility', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Verificaciones de Consistencia</label>
-                <p className="text-xs text-gray-500">Valida la consistencia de datos</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.qualitySettings.enableConsistencyChecks}
-                  onChange={(e) => updateQualitySettings('enableConsistencyChecks', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Validar Resultados</label>
-                <p className="text-xs text-gray-500">Verificación automática de resultados</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.qualitySettings.validateResults}
-                  onChange={(e) => updateQualitySettings('validateResults', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Configuración de Rendimiento */}
-      <div className="card p-6">
-        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Settings className="w-5 h-5" />
-          Configuración de Rendimiento
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tamaño de Lote
-            </label>
-            <input
-              type="number"
-              min="100"
-              max="10000"
-              value={settings.performance.batchSize}
-              onChange={(e) => updatePerformance('batchSize', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Uso Máximo de Memoria (MB)
-            </label>
-            <input
-              type="number"
-              min="512"
-              max="8192"
-              value={settings.performance.maxMemoryUsage}
-              onChange={(e) => updatePerformance('maxMemoryUsage', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-        
-        <div className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Procesamiento Paralelo</label>
-              <p className="text-xs text-gray-500">Utiliza múltiples hilos de procesamiento</p>
+              <label className="text-sm font-medium text-gray-700">
+                Habilitar Métricas de Calidad
+              </label>
+              <p className="text-xs text-gray-500">
+                Calcula métricas de calidad para los datos anonimizados
+              </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.performance.parallelProcessing}
-                onChange={(e) => updatePerformance('parallelProcessing', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium text-gray-700">Habilitar Caché</label>
-              <p className="text-xs text-gray-500">Almacena resultados temporales</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.performance.enableCaching}
-                onChange={(e) => updatePerformance('enableCaching', e.target.checked)}
+                checked={settings.qualitySettings.enableQualityMetrics}
+                onChange={(e) =>
+                  handleQualityChange("enableQualityMetrics", e.target.checked)
+                }
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
         </div>
-      </div>
-
-      {/* Configuración de Cumplimiento */}
-      <div className="card p-6">
-        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5" />
-          Configuración de Cumplimiento
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium text-gray-700">Ley 19.628 (Protección de Datos)</label>
-              <p className="text-xs text-gray-500">Normativa chilena de protección de datos</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.compliance.enableLey19628}
-                onChange={(e) => updateCompliance('enableLey19628', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium text-gray-700">Ley 21.719 (Datos Biométricos)</label>
-              <p className="text-xs text-gray-500">Normativa chilena para datos biométricos</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.compliance.enableLey21719}
-                onChange={(e) => updateCompliance('enableLey21719', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium text-gray-700">GDPR (Reglamento Europeo)</label>
-              <p className="text-xs text-gray-500">Reglamento General de Protección de Datos</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.compliance.enableGDPR}
-                onChange={(e) => updateCompliance('enableGDPR', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium text-gray-700">CCPA (California Consumer Privacy Act)</label>
-              <p className="text-xs text-gray-500">Normativa de privacidad de California</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.compliance.enableCCPA}
-                onChange={(e) => updateCompliance('enableCCPA', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-        
-        {settings.compliance.customRegulations.length > 0 && (
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Regulaciones Personalizadas
-            </label>
-            <div className="space-y-2">
-              {settings.compliance.customRegulations.map((regulation, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
-                    {regulation}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
