@@ -11,19 +11,24 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   onSettingsChange,
 }) => {
   const [settings, setSettings] = useState<GeneralSettingsType>({
-    systemName: "Zurich Anonimización",
-    systemDescription: "Sistema de Anonimización de Datos",
+    systemName: "",
+    systemDescription: "",
     defaultLanguage: "es",
     timezone: "America/Santiago",
     dateFormat: "DD/MM/YYYY",
     timeFormat: "24h",
-    sessionTimeout: 480,
     maxConcurrentJobs: 5,
-    defaultRetentionDays: 90,
+    defaultRetentionDays: 30,
     enableAuditLog: true,
-    enableNotifications: true,
-    autoBackup: true,
+    enableNotifications: false,
+    autoBackup: false,
     backupFrequency: "daily",
+    sessionTimeout: 30,
+    autoSaveInterval: 5,
+    enableDebugMode: false,
+    enableMaintenanceMode: false,
+    maintenanceMessage: "",
+    systemVersion: "1.0.0",
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
