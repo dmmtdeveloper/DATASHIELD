@@ -18,17 +18,17 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
     dateFormat: "DD/MM/YYYY",
     timeFormat: "24h",
     maxConcurrentJobs: 5,
+    sessionTimeout: 30,
+    autoSaveInterval: 5,
+    enableDebugMode: false,
+    enableMaintenanceMode: false,
+    applicationName: "",
+    language: "es",
     defaultRetentionDays: 30,
     enableAuditLog: true,
     enableNotifications: false,
     autoBackup: false,
     backupFrequency: "daily",
-    sessionTimeout: 30,
-    autoSaveInterval: 5,
-    enableDebugMode: false,
-    enableMaintenanceMode: false,
-    maintenanceMessage: "",
-    systemVersion: "1.0.0",
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
