@@ -23,19 +23,19 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       requireUppercase: true,
       requireLowercase: true,
       requireNumbers: true,
-      requireSpecialChars: true,
+      requireSpecialChars: false,
       expirationDays: 90,
     },
     sessionSecurity: {
       maxSessionDuration: 480,
       idleTimeout: 30,
       maxConcurrentSessions: 3,
-      requireReauthentication: true,
+      requireReauthentication: false,
     },
     auditSettings: {
       enableAuditLogging: true,
       logLevel: "detailed",
-      retentionDays: 365,
+      retentionDays: 90,
       enableRealTimeAlerts: true,
     },
     accessControl: {
@@ -44,8 +44,9 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       blockSuspiciousActivity: true,
       maxFailedAttempts: 3,
     },
-    encryptionAlgorithm: "AES-256",
-    hashingAlgorithm: "SHA-256",
+    // Eliminar estas líneas:
+    // encryptionAlgorithm: "AES-256",
+    // hashingAlgorithm: "SHA-256",
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -442,7 +443,9 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
         </div>
       </div>
 
+      {/* Eliminar toda esta sección desde la línea ~445 hasta ~480: */}
       {/* Encryption Settings */}
+      {/* 
       <div className="card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Key className="w-5 h-5 text-blue-600" />
@@ -483,6 +486,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
           </div>
         </div>
       </div>
+      */}
 
       {/* Audit Settings */}
       <div className="card p-6">
