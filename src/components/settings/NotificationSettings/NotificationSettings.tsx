@@ -54,11 +54,52 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
   const loadSettings = async () => {
     try {
       const currentSettings = await settingsService.getSettings();
-      if (currentSettings.notifications) {
-        setSettings(currentSettings.notifications);
+      if (currentSettings && currentSettings.notifications) {
+        const notificationSettings = currentSettings.notifications;
+
+        setSettings({
+          email: {
+            enabled: notificationSettings.email?.enabled ?? true,
+            jobCompletion: notificationSettings.email?.jobCompletion ?? true,
+            errors: notificationSettings.email?.errors ?? true,
+            systemAlerts: notificationSettings.email?.systemAlerts ?? true,
+            weeklyReports: notificationSettings.email?.weeklyReports ?? false,
+            emailAddress:
+              notificationSettings.email?.emailAddress ?? "admin@example.com",
+          },
+          browser: {
+            enabled: notificationSettings.browser?.enabled ?? true,
+            realTimeAlerts:
+              notificationSettings.browser?.realTimeAlerts ?? true,
+            jobUpdates: notificationSettings.browser?.jobUpdates ?? true,
+            systemNotifications:
+              notificationSettings.browser?.systemNotifications ?? true,
+          },
+          alerts: {
+            criticalErrors: notificationSettings.alerts?.criticalErrors ?? true,
+            securityIssues: notificationSettings.alerts?.securityIssues ?? true,
+            performanceWarnings:
+              notificationSettings.alerts?.performanceWarnings ?? false,
+            maintenanceReminders:
+              notificationSettings.alerts?.maintenanceReminders ?? true,
+          },
+          frequency: {
+            maxDailyEmails:
+              notificationSettings.frequency?.maxDailyEmails ?? 10,
+            quietHoursStart:
+              notificationSettings.frequency?.quietHoursStart ?? "22:00",
+            quietHoursEnd:
+              notificationSettings.frequency?.quietHoursEnd ?? "08:00",
+            enableQuietHours:
+              notificationSettings.frequency?.enableQuietHours ?? true,
+          },
+        });
+      } else {
+        console.log("No notification settings found, using defaults");
       }
     } catch (error) {
       console.error("Error loading notification settings:", error);
+      // Mantener los valores por defecto del estado inicial
     }
   };
 
@@ -78,11 +119,108 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
   const handleReset = async () => {
     try {
       const defaultSettings = await settingsService.getDefaultSettings();
-      if (defaultSettings.notifications) {
-        setSettings(defaultSettings.notifications);
+      if (defaultSettings && defaultSettings.notifications) {
+        const notificationSettings = defaultSettings.notifications;
+
+        setSettings({
+          email: {
+            enabled: notificationSettings.email?.enabled ?? true,
+            jobCompletion: notificationSettings.email?.jobCompletion ?? true,
+            errors: notificationSettings.email?.errors ?? true,
+            systemAlerts: notificationSettings.email?.systemAlerts ?? true,
+            weeklyReports: notificationSettings.email?.weeklyReports ?? false,
+            emailAddress:
+              notificationSettings.email?.emailAddress ?? "admin@example.com",
+          },
+          browser: {
+            enabled: notificationSettings.browser?.enabled ?? true,
+            realTimeAlerts:
+              notificationSettings.browser?.realTimeAlerts ?? true,
+            jobUpdates: notificationSettings.browser?.jobUpdates ?? true,
+            systemNotifications:
+              notificationSettings.browser?.systemNotifications ?? true,
+          },
+          alerts: {
+            criticalErrors: notificationSettings.alerts?.criticalErrors ?? true,
+            securityIssues: notificationSettings.alerts?.securityIssues ?? true,
+            performanceWarnings:
+              notificationSettings.alerts?.performanceWarnings ?? false,
+            maintenanceReminders:
+              notificationSettings.alerts?.maintenanceReminders ?? true,
+          },
+          frequency: {
+            maxDailyEmails:
+              notificationSettings.frequency?.maxDailyEmails ?? 10,
+            quietHoursStart:
+              notificationSettings.frequency?.quietHoursStart ?? "22:00",
+            quietHoursEnd:
+              notificationSettings.frequency?.quietHoursEnd ?? "08:00",
+            enableQuietHours:
+              notificationSettings.frequency?.enableQuietHours ?? true,
+          },
+        });
+      } else {
+        // Restablecer a valores por defecto
+        setSettings({
+          email: {
+            enabled: true,
+            jobCompletion: true,
+            errors: true,
+            systemAlerts: true,
+            weeklyReports: false,
+            emailAddress: "admin@example.com",
+          },
+          browser: {
+            enabled: true,
+            realTimeAlerts: true,
+            jobUpdates: true,
+            systemNotifications: true,
+          },
+          alerts: {
+            criticalErrors: true,
+            securityIssues: true,
+            performanceWarnings: false,
+            maintenanceReminders: true,
+          },
+          frequency: {
+            maxDailyEmails: 10,
+            quietHoursStart: "22:00",
+            quietHoursEnd: "08:00",
+            enableQuietHours: true,
+          },
+        });
       }
     } catch (error) {
       console.error("Error resetting notification settings:", error);
+      // Restablecer a valores por defecto en caso de error
+      setSettings({
+        email: {
+          enabled: true,
+          jobCompletion: true,
+          errors: true,
+          systemAlerts: true,
+          weeklyReports: false,
+          emailAddress: "admin@example.com",
+        },
+        browser: {
+          enabled: true,
+          realTimeAlerts: true,
+          jobUpdates: true,
+          systemNotifications: true,
+        },
+        alerts: {
+          criticalErrors: true,
+          securityIssues: true,
+          performanceWarnings: false,
+          maintenanceReminders: true,
+        },
+        frequency: {
+          maxDailyEmails: 10,
+          quietHoursStart: "22:00",
+          quietHoursEnd: "08:00",
+          enableQuietHours: true,
+        },
+      });
     }
   };
 
@@ -181,7 +319,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             </label>
             <input
               type="email"
-              value={settings.email.emailAddress}
+              value={settings.email?.emailAddress ?? "admin@example.com"}
               onChange={(e) =>
                 handleEmailChange("emailAddress", e.target.value)
               }
@@ -202,7 +340,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.email.enabled}
+                checked={settings.email?.enabled ?? true}
                 onChange={(e) => handleEmailChange("enabled", e.target.checked)}
                 className="sr-only peer"
               />
@@ -217,7 +355,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.email.jobCompletion}
+                checked={settings.email?.jobCompletion ?? true}
                 onChange={(e) =>
                   handleEmailChange("jobCompletion", e.target.checked)
                 }
@@ -234,7 +372,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.email.errors}
+                checked={settings.email?.errors ?? true}
                 onChange={(e) => handleEmailChange("errors", e.target.checked)}
                 className="sr-only peer"
               />
@@ -249,7 +387,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.email.systemAlerts}
+                checked={settings.email?.systemAlerts ?? true}
                 onChange={(e) =>
                   handleEmailChange("systemAlerts", e.target.checked)
                 }
@@ -266,7 +404,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.email.weeklyReports}
+                checked={settings.email?.weeklyReports ?? false}
                 onChange={(e) =>
                   handleEmailChange("weeklyReports", e.target.checked)
                 }
@@ -300,7 +438,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.browser.enabled}
+                checked={settings.browser?.enabled ?? true}
                 onChange={(e) =>
                   handleBrowserChange("enabled", e.target.checked)
                 }
@@ -317,7 +455,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.browser.realTimeAlerts}
+                checked={settings.browser?.realTimeAlerts ?? true}
                 onChange={(e) =>
                   handleBrowserChange("realTimeAlerts", e.target.checked)
                 }
@@ -334,7 +472,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.browser.jobUpdates}
+                checked={settings.browser?.jobUpdates ?? true}
                 onChange={(e) =>
                   handleBrowserChange("jobUpdates", e.target.checked)
                 }
@@ -351,7 +489,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.browser.systemNotifications}
+                checked={settings.browser?.systemNotifications ?? true}
                 onChange={(e) =>
                   handleBrowserChange("systemNotifications", e.target.checked)
                 }
@@ -380,7 +518,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.alerts.criticalErrors}
+                checked={settings.alerts?.criticalErrors ?? true}
                 onChange={(e) =>
                   handleAlertsChange("criticalErrors", e.target.checked)
                 }
@@ -397,7 +535,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.alerts.securityIssues}
+                checked={settings.alerts?.securityIssues ?? true}
                 onChange={(e) =>
                   handleAlertsChange("securityIssues", e.target.checked)
                 }
@@ -414,7 +552,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.alerts.performanceWarnings}
+                checked={settings.alerts?.performanceWarnings ?? false}
                 onChange={(e) =>
                   handleAlertsChange("performanceWarnings", e.target.checked)
                 }
@@ -431,7 +569,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.alerts.maintenanceReminders}
+                checked={settings.alerts?.maintenanceReminders ?? true}
                 onChange={(e) =>
                   handleAlertsChange("maintenanceReminders", e.target.checked)
                 }
@@ -461,7 +599,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               type="number"
               min="1"
               max="50"
-              value={settings.frequency.maxDailyEmails}
+              value={settings.frequency?.maxDailyEmails ?? 10}
               onChange={(e) =>
                 handleFrequencyChange(
                   "maxDailyEmails",
@@ -483,7 +621,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.frequency.enableQuietHours}
+                checked={settings.frequency?.enableQuietHours ?? true}
                 onChange={(e) =>
                   handleFrequencyChange("enableQuietHours", e.target.checked)
                 }
@@ -494,7 +632,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           </div>
         </div>
 
-        {settings.frequency.enableQuietHours && (
+        {(settings.frequency?.enableQuietHours ?? true) && (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -502,7 +640,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               </label>
               <input
                 type="time"
-                value={settings.frequency.quietHoursStart}
+                value={settings.frequency?.quietHoursStart ?? "22:00"}
                 onChange={(e) =>
                   handleFrequencyChange("quietHoursStart", e.target.value)
                 }
@@ -515,7 +653,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               </label>
               <input
                 type="time"
-                value={settings.frequency.quietHoursEnd}
+                value={settings.frequency?.quietHoursEnd ?? "08:00"}
                 onChange={(e) =>
                   handleFrequencyChange("quietHoursEnd", e.target.value)
                 }
